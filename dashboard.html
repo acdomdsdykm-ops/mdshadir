@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Kehadiran MDS</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+body{
+  font-family:Arial;
+  margin:0;
+  min-height:100vh;
+  background:linear-gradient(135deg,#064e3b,#022c22);
+  color:white;
+  text-align:center;
+}
+
+/* PANEL */
+.panel{
+  background:white;
+  color:black;
+  margin:12px;
+  padding:15px;
+  border-radius:12px;
+  text-align:left;
+}
+
+/* INPUT */
+input,select{
+  width:98%;
+  padding:10px;
+  margin-top:5px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+/* BUTTON */
+button{
+  width:99%;
+  padding:12px;
+  margin:6px 0;
+  border:none;
+  border-radius:10px;
+  background:#3498db;
+  color:white;
+  cursor:pointer;
+}
+button:hover{background:#2980b9;}
+
+/* STATUS */
+#statusBox{
+  width:300px;
+  margin:10px auto;
+  padding:10px;
+  border-radius:10px;
+  font-weight:bold;
+}
+.ready{background:#16a34a;}
+.processing{background:#f59e0b;}
+.success{background:#2563eb;}
+
+/* QR */
+#reader{
+  width:300px;
+  margin:auto;
+}
+
+/* POPUP */
+.popup{
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  background:white;
+  color:black;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
+  opacity:0;
+  visibility:hidden;
+}
+.popup.show{
+  opacity:1;
+  visibility:visible;
+}
+
+/* HIDE */
+#bilBox,#programBox,#taklimatBox,#tempatLainBox{
+  display:none;
+}
+</style>
+</head>
+
+<body>
+
+<script>
+if(sessionStorage.getItem("mds_login")!=="true"){
+  window.location.href="login.html";
+}
+</script>
+
+<h2>🏢 Dashboard Kehadiran MDS</h2>
+
+<button onclick="logout()" style="background:red;">Logout</button>
+
+<div class="panel">
+
+<label>Jenis Mesyuarat / Program</label>
+<select id="jenisMesyuarat" onchange="toggleOptions()">
+<option value="">-- Pilih --</option>
+
+<option value="Jawatankuasa Kewangan" data-bil="1">Jawatankuasa Kewangan</option>
+<option value="Jawatankuasa Perlesenan" data-bil="1">Jawatankuasa Perlesenan</option>
+<option value="Jawatankuasa Pengurusan" data-bil="1">Jawatankuasa Pengurusan</option>
+
+<option value="Perhimpunan Bulanan Staf" data-bil="0">Perhimpunan Bulanan Staf</option>
+<option value="Taklimat Khas" data-bil="0">Taklimat Khas</option>
+<option value="Program Komuniti" data-bil="0">Program Komuniti</option>
+</select>
+
+<div id="programBox">
+<input id="namaProgram" placeholder="Nama Program">
+</div>
+
+<div id="taklimatBox">
+<input id="namaTaklimat" placeholder="Nama Taklimat">
+</div>
+
+<div id="bilBox">
+<select id="bilMesyuarat">
+<option>Bil.1/2026</option>
+<option>Bil.2/2026</option>
+<option>Bil.3/2026</option>
+<option>Bil.4/2026</option>
+</select>
+</div>
+
+<label>Tarikh</label>
+<input type="date" id="tarikh">
+
+<!-- MASA DROPDOWN -->
+<label>Masa Mula</label>
+<select id="masaMula">
+<option value="">-- Pilih --</option>
+<option value="08:00">0800</option>
+<option value="09:00">0900</option>
+<option value="10:00">1000</option>
+<option value="11:00">1100</option>
+<option value="12:00">1200</option>
+<option value="13:00">1300</option>
+<option value="14:00">1400</option>
+<option value="15:00">1500</option>
+<option value="16:00">1600</option>
+<option value="17:00">1700</option>
+</select>
+
+<label>Masa Tamat</label>
+<select id="masaTamat">
+<option value="">-- Pilih --</option>
+<option value="08:00">0800</option>
+<option value="09:00">0900</option>
+<option value="10:00">1000</option>
+<option value="11:00">1100</option>
+<option value="12:00">1200</option>
+<option value="13:00">1300</option>
+<option value="14:00">1400</option>
+<option value="15:00">1500</option>
+<option value="16:00">1600</option>
+<option value="17:00">1700</option>
+</select>
+
+<label>Tempat</label>
+<select id="tempat" onchange="toggleTempat()">
+<option>Bilik Mesyuarat Utama</option>
+<option>Bilik Jawatankuasa</option>
+<option value="lain">Lain-lain</option>
+</select>
+
+<input id="tempatLainBox" placeholder="Lokasi lain">
+
+</div>
+
+<!-- STATUS -->
+<div id="statusBox" class="ready">🟢 Sedia untuk scan</div>
+
+<h3>📷 Scan QR</h3>
+
+<button onclick="restartScanner()" style="background:#f59e0b;">
+🔄 Refresh Scanner
+</button>
+
+<div id="reader"></div>
+
+<!-- POPUP -->
+<div id="popup" class="popup">
+<h3>✔ SCAN BERJAYA</h3>
+<p id="pNama"></p>
+<p id="pJawatan"></p>
+</div>
+
+<script>
+
+const API="https://script.google.com/macros/s/AKfycbwUfYEUShEnVyld8GIeQTeY3STUDHvwK8QsIqah2D1vFNoup7NMupjsYh-z-6CExH75PA/exec";
+
+let scanner,lock=false;
+const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+
+/* AUTO +1 JAM */
+masaMula.addEventListener("change",()=>{
+  if(!masaMula.value) return;
+  let [h,m]=masaMula.value.split(":");
+  let d=new Date();
+  d.setHours(+h);
+  d.setMinutes(+m);
+  d.setHours(d.getHours()+1);
+
+  masaTamat.value=
+    String(d.getHours()).padStart(2,"0")+":"+
+    String(d.getMinutes()).padStart(2,"0");
+});
+
+/* STATUS */
+function setStatus(type,text){
+  statusBox.className=type;
+  statusBox.innerText=text;
+}
+
+/* LOGOUT */
+function logout(){
+  sessionStorage.removeItem("mds_login");
+  window.location.href="login.html";
+}
+
+/* TOGGLE */
+function toggleOptions(){
+  let s=jenisMesyuarat.options[jenisMesyuarat.selectedIndex];
+  bilBox.style.display=s.getAttribute("data-bil")==="1"?"block":"none";
+  programBox.style.display=jenisMesyuarat.value==="Program Komuniti"?"block":"none";
+  taklimatBox.style.display=jenisMesyuarat.value==="Taklimat Khas"?"block":"none";
+}
+
+function toggleTempat(){
+  tempatLainBox.style.display=tempat.value==="lain"?"block":"none";
+}
+
+function getMesyuarat(){
+  let j=jenisMesyuarat.value;
+  if(j==="Program Komuniti") return j+" - "+namaProgram.value;
+  if(j==="Taklimat Khas") return j+" - "+namaTaklimat.value;
+
+  let s=jenisMesyuarat.options[jenisMesyuarat.selectedIndex];
+  return s.getAttribute("data-bil")==="1"
+    ? j+" "+bilMesyuarat.value : j;
+}
+
+/* SCANNER */
+function startQR(){
+
+if(scanner){
+  scanner.clear().catch(()=>{});
+}
+
+scanner=new Html5Qrcode("reader");
+
+scanner.start({facingMode:"environment"},{fps:10,qrbox:250},text=>{
+
+if(lock) return;
+lock=true;
+
+setStatus("processing","🟡 Sedang diproses...");
+
+scanner.stop().catch(()=>{});
+
+fetch(API,{
+method:"POST",
+headers:{"Content-Type":"text/plain"},
+body:JSON.stringify({
+id:text,
+mesyuarat:getMesyuarat(),
+tempat:tempat.value==="lain"?tempatLainBox.value:tempat.value,
+masa:masaMula.value+" - "+masaTamat.value
+})
+})
+.then(r=>r.json())
+.then(res=>{
+
+beep.play();
+if(navigator.vibrate) navigator.vibrate(300);
+
+pNama.innerText="Nama: "+res.nama;
+pJawatan.innerText="Jawatan: "+res.jawatan;
+
+popup.classList.add("show");
+
+setStatus("success","🔵 Berjaya");
+
+setTimeout(()=>{
+popup.classList.remove("show");
+lock=false;
+setStatus("ready","🟢 Sedia untuk scan");
+startQR();
+},1800);
+
+});
+
+});
+
+}
+
+function restartScanner(){
+setStatus("processing","🔄 Restart...");
+startQR();
+setTimeout(()=>setStatus("ready","🟢 Sedia untuk scan"),1000);
+}
+
+startQR();
+
+</script>
+
+</body>
+</html>

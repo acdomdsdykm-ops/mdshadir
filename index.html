@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sistem Kehadiran MDS</title>
+
+<style>
+body{
+  font-family:Arial;
+  text-align:center;
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#064e3b,#022c22);
+  color:white;
+}
+.loader{
+  font-size:18px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="loader">
+  ⏳ Membuka Sistem Kehadiran...
+</div>
+
+<script>
+
+/* CHECK LOGIN */
+if(sessionStorage.getItem("mds_login")==="true"){
+  window.location.replace("dashboard.html");
+}else{
+  window.location.replace("login.html");
+}
+
+</script>
+
+</body>
+</html>

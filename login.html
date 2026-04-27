@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login Sistem Kehadiran MDS</title>
+
+<style>
+body{
+  font-family:Arial;
+  text-align:center;
+  margin:0;
+  min-height:100vh;
+  background:linear-gradient(135deg,#064e3b,#022c22);
+  color:white;
+}
+
+.panel{
+  background:white;
+  color:black;
+  margin:80px auto;
+  padding:20px;
+  border-radius:12px;
+  width:300px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.25);
+}
+
+input{
+  width:95%;
+  padding:10px;
+  margin:10px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
+  background:#3498db;
+  color:white;
+  cursor:pointer;
+}
+button:hover{background:#2980b9;}
+
+.report-btn{
+  background:#2ecc71;
+}
+.report-btn:hover{
+  background:#27ae60;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🏢 Sistem Kehadiran MDS</h2>
+
+<div class="panel">
+  <input id="user" placeholder="Username">
+  <input id="pass" type="password" placeholder="Password">
+  
+  <button onclick="login()">Login</button>
+
+  <!-- ✅ BUTANG REPORT -->
+  <button class="report-btn" onclick="goReport()">
+    🔍 Cari Report
+  </button>
+</div>
+
+<script>
+
+const API="https://script.google.com/macros/s/AKfycbwUfYEUShEnVyld8GIeQTeY3STUDHvwK8QsIqah2D1vFNoup7NMupjsYh-z-6CExH75PA/exec";
+
+function login(){
+fetch(API,{
+method:"POST",
+headers:{"Content-Type":"text/plain"},
+body:JSON.stringify({
+action:"login",
+user:user.value,
+pass:pass.value
+})
+})
+.then(r=>r.json())
+.then(res=>{
+if(!res.success){
+alert("Login gagal");
+return;
+}
+
+sessionStorage.setItem("mds_login","true");
+window.location.href="dashboard.html";
+})
+.catch(()=>{
+alert("Ralat sambungan server");
+});
+}
+
+/* ✅ FUNCTION KE REPORT */
+function goReport(){
+  window.location.href="report.html"; 
+  /* kalau guna report.htm tukar sini */
+}
+
+</script>
+
+</body>
+</html>

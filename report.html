@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laporan Kehadiran MDS</title>
+
+<style>
+body{
+  font-family:Arial;
+  margin:0;
+  padding:20px;
+  min-height:100vh;
+  background:linear-gradient(135deg,#064e3b,#022c22);
+  color:white;
+  text-align:center;
+}
+
+.box{
+  background:white;
+  color:black;
+  padding:15px;
+  margin:10px;
+  border-radius:12px;
+}
+
+input{
+  padding:10px;
+  margin:8px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+button{
+  padding:10px 15px;
+  border:none;
+  border-radius:8px;
+  background:#3498db;
+  color:white;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:15px;
+  background:white;
+  color:black;
+}
+
+th,td{
+  border:1px solid #000;
+  padding:8px;
+  text-align:left;
+}
+
+th{
+  background:#f2f2f2;
+}
+
+.popup{
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  background:white;
+  color:black;
+  padding:20px;
+  width:320px;
+  border-radius:10px;
+  display:none;
+}
+
+.popup button{
+  width:100%;
+  margin-top:5px;
+}
+
+@media print{
+  button,.popup{
+    display:none !important;
+  }
+
+  body{
+    background:white;
+    color:black;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h2>📄 Laporan Kehadiran MDS</h2>
+
+<div class="box">
+<label>Tarikh:</label>
+<input type="date" id="tarikh">
+
+<button onclick="loadMesyuarat()">🔍 Cari Report</button>
+<button onclick="window.print()">🖨️ Print PDF</button>
+</div>
+
+<!-- POPUP MESYUARAT -->
+<div id="popup" class="popup">
+<h3>Pilih Mesyuarat</h3>
+<div id="list"></div>
+<button onclick="closePopup()">Tutup</button>
+</div>
+
+<!-- TABLE -->
+<div class="box">
+<table id="table">
+<thead>
+<tr>
+<th>Bil</th>
+<th>Nama</th>
+<th>Jawatan</th>
+<th>Masa</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+
+<script>
+
+const API="https://script.google.com/macros/s/AKfycbwY6AswdEMwOU2w43fJour9UzZ02Q6-AccmVlnl9zoVnoGIcho-ZgOe8-2cy5Zx0Kl9NA/exec";
+
+/* LOAD MESYUARAT DARI SHEET */
+function loadMesyuarat(){
+
+fetch(API,{
+method:"POST",
+headers:{"Content-Type":"text/plain"},
+body:JSON.stringify({
+action:"listMesyuarat",
+tarikh:tarikh.value
+})
+})
+.then(r=>r.json())
+.then(data=>{
+
+let list=document.getElementById("list");
+list.innerHTML="";
+
+data.forEach(m=>{
+let btn=document.createElement("button");
+btn.innerText=m;
+btn.onclick=()=>loadReport(m);
+list.appendChild(btn);
+});
+
+popup.style.display="block";
+
+});
+
+}
+
+/* LOAD REPORT DARI SHEET */
+function loadReport(mesyuarat){
+
+popup.style.display="none";
+
+fetch(API,{
+method:"POST",
+headers:{"Content-Type":"text/plain"},
+body:JSON.stringify({
+action:"report",
+tarikh:tarikh.value,
+mesyuarat:mesyuarat
+})
+})
+.then(r=>r.json())
+.then(data=>{
+
+let tbody=document.querySelector("#table tbody");
+tbody.innerHTML="";
+
+if(!data || data.length===0){
+tbody.innerHTML="<tr><td colspan='4'>Tiada data</td></tr>";
+return;
+}
+
+data.forEach((r,i)=>{
+
+tbody.innerHTML += `
+<tr>
+<td>${i+1}</td>
+<td>${r.nama}</td>
+<td>${r.jawatan}</td>
+<td>${r.masa}</td>
+</tr>
+`;
+
+});
+
+});
+
+}
+
+function closePopup(){
+popup.style.display="none";
+}
+
+</script>
+
+</body>
+</html>
