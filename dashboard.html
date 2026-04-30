@@ -10,29 +10,43 @@ body{
   background:linear-gradient(135deg,#064e3b,#022c22);
   color:white;
   text-align:center;
+  margin:0;
 }
 
 .box{
   background:white;
   color:black;
-  margin:20px;
+  margin:40px auto;
   padding:20px;
   border-radius:12px;
+  width:320px;
 }
 
 input,select{
   width:90%;
   padding:10px;
   margin:8px;
+  border-radius:8px;
+  border:1px solid #ccc;
 }
 
 button{
-  padding:10px;
+  padding:12px;
   width:95%;
   background:#16a34a;
   color:white;
   border:none;
   border-radius:8px;
+  cursor:pointer;
+}
+
+.info{
+  background:#f3f3f3;
+  padding:10px;
+  border-radius:8px;
+  margin-top:10px;
+  font-size:13px;
+  text-align:left;
 }
 </style>
 </head>
@@ -43,11 +57,32 @@ button{
 
 <div class="box">
 
-<label>Tarikh</label><br>
+<label>📅 Tarikh</label><br>
 <input type="date" id="tarikh"><br>
 
-<label>Mesyuarat</label><br>
-<input type="text" id="mesyuarat" placeholder="Nama mesyuarat"><br>
+<label>📌 Mesyuarat</label><br>
+<select id="mesyuarat"></select>
+
+<!-- ⏰ MASA MANUAL -->
+<label>⏰ Masa Mula</label><br>
+<input type="time" id="mula"><br>
+
+<label>⏰ Masa Tamat</label><br>
+<input type="time" id="tamat"><br>
+
+<!-- 📍 TEMPAT -->
+<label>📍 Tempat</label><br>
+<select id="tempat">
+<option>Dewan Pejabat Majlis Daerah Simunjan</option>
+<option>Dewan Setia</option>
+<option>Dewan Mesra</option>
+<option>Bilik Mesyuarat Jawatankuasa</option>
+<option>Bilik Mesyuarat Utama MDS</option>
+</select>
+
+<div id="info" class="info">
+Sila lengkapkan maklumat mesyuarat
+</div>
 
 <button onclick="start()">🚀 Mula Scanner</button>
 
@@ -55,21 +90,66 @@ button{
 
 <script>
 
+/* =========================
+   SENARAI MESYUARAT
+========================= */
+const list = [
+"Bil.1/2026 - Taklimat Pengurusan",
+"Bil.2/2026 - Mesyuarat Jawatankuasa",
+"Bil.3/2026 - Mesyuarat Operasi",
+"Bil.4/2026 - Mesyuarat Pembangunan",
+"Bil.5/2026 - Mesyuarat Khas",
+"Bil.6/2026 - Mesyuarat Penutup",
+"Mesyuarat Penuh",
+"Perhimpunan Bulanan"
+];
+
+/* LOAD */
+function load(){
+let s = document.getElementById("mesyuarat");
+
+list.forEach(m=>{
+let opt = document.createElement("option");
+opt.textContent = m;
+s.appendChild(opt);
+});
+}
+
+/* START */
 function start(){
 
-if(!tarikh.value || !mesyuarat.value){
-alert("Isi lengkap");
+const tarikh = document.getElementById("tarikh").value;
+const mesyuarat = document.getElementById("mesyuarat").value;
+const mula = document.getElementById("mula").value;
+const tamat = document.getElementById("tamat").value;
+const tempat = document.getElementById("tempat").value;
+
+if(!tarikh || !mesyuarat || !mula || !tamat){
+alert("Sila lengkapkan semua maklumat");
 return;
 }
 
+/* VALIDASI MASA */
+if(mula >= tamat){
+alert("Masa tamat mesti lebih lewat dari masa mula");
+return;
+}
+
+/* SIMPAN SESSION */
 sessionStorage.setItem("mds_data", JSON.stringify({
-tarikh: tarikh.value,
-mesyuarat: mesyuarat.value
+  tarikh: tarikh,
+  mesyuarat: mesyuarat,
+  mula: mula,
+  tamat: tamat,
+  tempat: tempat
 }));
 
 window.location.href="scanner.html";
 
 }
+
+/* INIT */
+load();
 
 </script>
 
