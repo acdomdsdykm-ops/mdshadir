@@ -17,7 +17,7 @@ body{
 
 #reader{
   width:320px;
-  margin:10px auto;
+  margin:auto;
 }
 
 #statusBox{
@@ -25,7 +25,6 @@ body{
   margin:10px auto;
   padding:12px;
   border-radius:10px;
-  font-weight:bold;
 }
 
 .ready{background:#16a34a;}
@@ -50,7 +49,8 @@ th{background:#16a34a;color:white;}
 
 .popup{
   position:fixed;
-  top:50%;left:50%;
+  top:50%;
+  left:50%;
   transform:translate(-50%,-50%);
   background:white;
   color:black;
@@ -59,7 +59,6 @@ th{background:#16a34a;color:white;}
   opacity:0;
   visibility:hidden;
 }
-
 .popup.show{
   opacity:1;
   visibility:visible;
@@ -78,13 +77,11 @@ button{
 
 <body>
 
-<h2>📷 Scanner Kehadiran MDS</h2>
+<h2>📷 Scanner Kehadiran</h2>
 
 <div id="statusBox" class="ready">🟢 Sedia scan</div>
 
 <div id="reader"></div>
-
-<button onclick="back()">⬅️ Kembali</button>
 
 <table>
 <thead>
@@ -108,7 +105,7 @@ button{
 
 <script>
 
-const API_URL="https://script.google.com/macros/s/AKfycbz6FrSlcR8ee6QXHHEQbx6dHQW7pf29Dh3T4drbOXitCWRKMaTNudv5yb446pawkMVunA/exec";
+const API="https://script.google.com/macros/s/AKfycbw49s-IeOeoCGju6aZugfqK9kcVzSB0JZS0iYCr7hEmntlIqenw6AVlaz_kh0-R_9eZTg/exec";
 
 let scanner;
 let lock=false;
@@ -118,29 +115,23 @@ const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg
 
 let data=JSON.parse(sessionStorage.getItem("mds_data")||"{}");
 
-if(!data.mesyuarat){
-alert("Sila isi dashboard");
-window.location.href="dashboard.html";
-}
-
-function setStatus(type,text){
-statusBox.className=type;
-statusBox.innerText=text;
+function setStatus(t,m){
+statusBox.className=t;
+statusBox.innerText=m;
 }
 
 function addRow(res){
-
 bil++;
 
 let tr=document.createElement("tr");
 
 tr.innerHTML=`
 <td>${bil}</td>
-<td>${res.nama || "-"}</td>
-<td>${res.jawatan || "-"}</td>
-<td>${res.bahagian || "-"}</td>
-<td>${res.masa || "-"}</td>
-<td>${res.status || "Hadir"}</td>
+<td>${res.nama}</td>
+<td>${res.jawatan}</td>
+<td>${res.bahagian}</td>
+<td>${res.masa}</td>
+<td>${res.status}</td>
 `;
 
 tbody.prepend(tr);
@@ -158,17 +149,11 @@ text=>{
 if(lock) return;
 lock=true;
 
-if(!text){
-setStatus("error","❌ QR kosong");
-lock=false;
-return;
-}
-
 setStatus("processing","🟡 Proses...");
 
 scanner.stop().catch(()=>{});
 
-fetch(API_URL,{
+fetch(API,{
 method:"POST",
 headers:{"Content-Type":"text/plain"},
 body:JSON.stringify({
@@ -182,36 +167,31 @@ mesyuarat:data.mesyuarat
 
 beep.play();
 
-pNama.innerHTML="<b>"+res.nama+"</b>";
-pJawatan.innerHTML="<b>"+res.jawatan+"</b>";
+pNama.innerHTML=res.nama;
+pJawatan.innerHTML=res.jawatan;
 
 popup.classList.add("show");
 
 addRow(res);
 
-setStatus("success","🔵 Berjaya");
+setStatus("success","🔵 OK");
 
 setTimeout(()=>{
 popup.classList.remove("show");
 lock=false;
 setStatus("ready","🟢 Sedia scan");
 startQR();
-},1000);
+},1200);
 
 })
-.catch(err=>{
-console.log(err);
-setStatus("error","❌ API Error");
+.catch(()=>{
+setStatus("error","❌ Error API");
 lock=false;
 startQR();
 });
 
 });
 
-}
-
-function back(){
-window.location.href="dashboard.html";
 }
 
 startQR();
