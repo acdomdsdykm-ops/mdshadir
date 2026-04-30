@@ -90,6 +90,10 @@ th{
   button,.popup{
     display:none !important;
   }
+  body{
+    background:white;
+    color:black;
+  }
 }
 </style>
 </head>
@@ -98,14 +102,16 @@ th{
 
 <h2>📄 MDS Report System</h2>
 
+<!-- INPUT -->
 <div class="box">
-<label>Tarikh:</label><br>
-<input type="date" id="tarikh"><br><br>
+  <label>Tarikh:</label><br>
+  <input type="date" id="tarikh"><br><br>
 
-<button onclick="loadMesyuarat()">🔍 Cari Report</button>
-<button onclick="window.print()">🖨️ Print</button>
+  <button onclick="loadMesyuarat()">🔍 Cari Report</button>
+  <button onclick="downloadPDF()">📥 Print PDF</button>
 </div>
 
+<!-- INFO -->
 <div class="info">
 📌 Mesyuarat: <span id="mesyuarat">-</span><br>
 📅 Tarikh: <span id="tarikhInfo">-</span>
@@ -138,15 +144,38 @@ th{
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbwcDwvi64A5oJP2C_rbJefi30pkGRkPnrwDNC8r4o7VSHKrccKytMy9OwCY24e2-J9UnA/exec";
+const API = "https://script.google.com/macros/s/AKfycbwfzwNeo3B-cTaLA39qfImRA5c5_9owyOiPcleoZt4-dby4B9d4Kr_ZBtoqtVdwIYdMXg/exec";
 
 const popup = document.getElementById("popup");
 const tarikhEl = document.getElementById("tarikh");
 
 /* =========================
+   SAFE API CALL
+========================= */
+async function postAPI(payload){
+
+  try{
+    const res = await fetch(API,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/x-www-form-urlencoded"
+      },
+      body:new URLSearchParams(payload)
+    });
+
+    return await res.json();
+
+  }catch(err){
+    console.error(err);
+    alert("Ralat sambungan API");
+    return null;
+  }
+}
+
+/* =========================
    LOAD MESYUARAT
 ========================= */
-function loadMesyuarat(){
+async function loadMesyuarat(){
 
 if(!tarikhEl.value){
 alert("Sila pilih tarikh");
@@ -155,23 +184,15 @@ return;
 
 document.getElementById("tarikhInfo").innerText = tarikhEl.value;
 
-fetch(API,{
-method:"POST",
-headers:{
-"Content-Type":"application/x-www-form-urlencoded"
-},
-body:new URLSearchParams({
-action:"listMesyuarat",
-tarikh:tarikhEl.value
-})
-})
-.then(r=>r.json())
-.then(data=>{
+let data = await postAPI({
+  action:"listMesyuarat",
+  tarikh:tarikhEl.value
+});
 
 let list=document.getElementById("list");
 list.innerHTML="";
 
-if(!data || data.length===0){
+if(!Array.isArray(data) || data.length===0){
 list.innerHTML="Tiada mesyuarat";
 popup.style.display="block";
 return;
@@ -180,43 +201,34 @@ return;
 data.forEach(m=>{
 let btn=document.createElement("button");
 btn.innerText=m;
+
 btn.onclick=()=>loadReport(m);
+
 list.appendChild(btn);
 });
 
 popup.style.display="block";
-
-})
-.catch(()=>alert("Ralat load mesyuarat"));
 }
 
 /* =========================
    LOAD REPORT
 ========================= */
-function loadReport(mesyuarat){
+async function loadReport(mesyuarat){
 
 popup.style.display="none";
 
 document.getElementById("mesyuarat").innerText = mesyuarat;
 
-fetch(API,{
-method:"POST",
-headers:{
-"Content-Type":"application/x-www-form-urlencoded"
-},
-body:new URLSearchParams({
-action:"report",
-tarikh:tarikhEl.value,
-mesyuarat:mesyuarat
-})
-})
-.then(r=>r.json())
-.then(data=>{
+let data = await postAPI({
+  action:"report",
+  tarikh:tarikhEl.value,
+  mesyuarat:mesyuarat
+});
 
 let tbody=document.getElementById("tbody");
 tbody.innerHTML="";
 
-if(!data || data.length===0){
+if(!Array.isArray(data) || data.length===0){
 tbody.innerHTML="<tr><td colspan='7'>Tiada data</td></tr>";
 return;
 }
@@ -225,17 +237,42 @@ data.forEach((r,i)=>{
 tbody.innerHTML += `
 <tr>
 <td>${i+1}</td>
-<td>${r.nama}</td>
-<td>${r.jawatan}</td>
-<td>${r.bahagian}</td>
-<td>${r.tarikh}</td>
-<td>${r.masa}</td>
-<td>${r.status}</td>
+<td>${r.nama || "-"}</td>
+<td>${r.jawatan || "-"}</td>
+<td>${r.bahagian || "-"}</td>
+<td>${r.tarikh || "-"}</td>
+<td>${r.masa || "-"}</td>
+<td>${r.status || "-"}</td>
 </tr>
 `;
 });
 
+}
+
+/* =========================
+   PRINT PDF (APPS SCRIPT)
+========================= */
+async function downloadPDF(){
+
+let tarikh = tarikhEl.value;
+let mesyuarat = document.getElementById("mesyuarat").innerText;
+
+if(!tarikh || mesyuarat === "-"){
+alert("Sila pilih tarikh & mesyuarat dahulu");
+return;
+}
+
+let res = await postAPI({
+  action:"pdf",
+  tarikh:tarikh,
+  mesyuarat:mesyuarat
 });
+
+if(res && res.url){
+window.open(res.url,"_blank");
+}else{
+alert("Gagal generate PDF");
+}
 
 }
 
