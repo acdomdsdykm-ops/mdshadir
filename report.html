@@ -14,7 +14,6 @@ body{
   text-align:center;
 }
 
-/* BOX */
 .box{
   background:white;
   color:black;
@@ -23,14 +22,12 @@ body{
   border-radius:12px;
 }
 
-/* INPUT */
 input{
   padding:10px;
   border-radius:8px;
   border:1px solid #ccc;
 }
 
-/* BUTTON */
 button{
   padding:10px 15px;
   border:none;
@@ -41,11 +38,6 @@ button{
   margin:5px;
 }
 
-button:disabled{
-  background:#999;
-}
-
-/* INFO */
 .info{
   background:white;
   color:black;
@@ -55,7 +47,6 @@ button:disabled{
   font-weight:bold;
 }
 
-/* TABLE */
 table{
   width:100%;
   border-collapse:collapse;
@@ -87,12 +78,6 @@ th{
   border-radius:10px;
   display:none;
   z-index:999;
-  animation:fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn{
-  from{opacity:0; transform:translate(-50%,-55%);}
-  to{opacity:1; transform:translate(-50%,-50%);}
 }
 
 .popup button{
@@ -100,11 +85,10 @@ th{
   margin-top:8px;
 }
 
-/* LOADING OVERLAY */
+/* LOADING */
 #loading{
   position:fixed;
-  top:0;
-  left:0;
+  top:0;left:0;
   width:100%;
   height:100%;
   background:rgba(0,0,0,0.85);
@@ -132,24 +116,8 @@ th{
   margin-top:12px;
   font-size:15px;
   font-weight:bold;
-  animation:blink 1s infinite;
 }
 
-@keyframes blink{
-  0%,100%{opacity:1;}
-  50%{opacity:0.4;}
-}
-
-/* PRINT */
-@media print{
-  button,.popup,#loading{
-    display:none !important;
-  }
-  body{
-    background:white;
-    color:black;
-  }
-}
 </style>
 </head>
 
@@ -157,7 +125,6 @@ th{
 
 <h2>📄 MDS Report System</h2>
 
-<!-- INPUT -->
 <div class="box">
   <label>Tarikh:</label><br>
   <input type="date" id="tarikh"><br><br>
@@ -166,13 +133,11 @@ th{
   <button onclick="downloadPDF()">📥 Print PDF</button>
 </div>
 
-<!-- INFO -->
 <div class="info">
 📌 Mesyuarat: <span id="mesyuarat">-</span><br>
 📅 Tarikh: <span id="tarikhInfo">-</span>
 </div>
 
-<!-- TABLE -->
 <div class="box">
 <table>
 <thead>
@@ -194,13 +159,13 @@ th{
 <div id="popup" class="popup">
 <h3>Pilih Mesyuarat</h3>
 <div id="list"></div>
-<button onclick="popup.style.display='none'">Tutup</button>
+<button onclick="closePopup()">Tutup</button>
 </div>
 
 <!-- LOADING -->
 <div id="loading">
   <div class="spinner"></div>
-  <div class="loading-text" id="loadingText">Loading...</div>
+  <div class="loading-text">Loading...</div>
 </div>
 
 <script>
@@ -208,165 +173,151 @@ th{
 const API = "https://script.google.com/macros/s/AKfycbyzb6anotXSHEa0t9msxSstCpmOxEXrh3uZMmhiGEfSY7a9611nKfhGc5fsYi4bWQuiSA/exec";
 
 const popup = document.getElementById("popup");
-const tarikhEl = document.getElementById("tarikh");
 
-/* =========================
-   LOGIN CHECK
-========================= */
+/* ================= LOGIN CHECK ================= */
 if(sessionStorage.getItem("mds_login") !== "true"){
   alert("Sila login dahulu");
   window.location.href="login.html";
 }
 
-/* =========================
-   LOADING CONTROL
-========================= */
-function showLoading(text){
-  document.getElementById("loadingText").innerText = text || "Loading...";
-  document.getElementById("loading").style.display = "flex";
+/* ================= LOADING ================= */
+function showLoading(){
+  document.getElementById("loading").style.display="flex";
 }
 
 function hideLoading(){
-  document.getElementById("loading").style.display = "none";
+  document.getElementById("loading").style.display="none";
 }
 
-/* =========================
-   API CALL
-========================= */
+/* ================= SAFE FETCH ================= */
 async function postAPI(payload){
 
   try{
-    const res = await fetch(API,{
+    let res = await fetch(API,{
       method:"POST",
-      headers:{
-        "Content-Type":"application/x-www-form-urlencoded"
-      },
+      headers:{"Content-Type":"application/x-www-form-urlencoded"},
       body:new URLSearchParams(payload)
     });
 
     return await res.json();
 
   }catch(err){
-    console.error(err);
-    alert("Ralat sambungan API");
+    console.log(err);
     return null;
   }
 }
 
-/* =========================
-   LOAD MESYUARAT
-========================= */
+/* ================= MESYUARAT ================= */
 async function loadMesyuarat(){
 
-if(!tarikhEl.value){
-alert("Sila pilih tarikh");
-return;
+  let tarikh = document.getElementById("tarikh").value;
+
+  if(!tarikh){
+    alert("Sila pilih tarikh");
+    return;
+  }
+
+  showLoading();
+
+  document.getElementById("tarikhInfo").innerText = formatDDMMYYYY(tarikh);
+
+  let data = await postAPI({
+    action:"listMesyuarat",
+    tarikh:tarikh
+  });
+
+  hideLoading();
+
+  let list = document.getElementById("list");
+  list.innerHTML = "";
+
+  if(!Array.isArray(data) || data.length === 0){
+    list.innerHTML = "Tiada mesyuarat";
+    popup.style.display = "block";
+    return;
+  }
+
+  data.forEach(m=>{
+    let btn = document.createElement("button");
+    btn.innerText = m;
+    btn.onclick = ()=>loadReport(m);
+    list.appendChild(btn);
+  });
+
+  popup.style.display="block";
 }
 
-showLoading("Loading report data...");
-
-document.getElementById("tarikhInfo").innerText = tarikhEl.value;
-
-let data = await postAPI({
-  action:"listMesyuarat",
-  tarikh:tarikhEl.value
-});
-
-hideLoading();
-
-let list=document.getElementById("list");
-list.innerHTML="";
-
-if(!Array.isArray(data) || data.length===0){
-list.innerHTML="Tiada mesyuarat";
-popup.style.display="block";
-return;
-}
-
-data.forEach(m=>{
-let btn=document.createElement("button");
-btn.innerText=m;
-btn.onclick=()=>loadReport(m);
-list.appendChild(btn);
-});
-
-popup.style.display="block";
-}
-
-/* =========================
-   LOAD REPORT
-========================= */
+/* ================= REPORT ================= */
 async function loadReport(mesyuarat){
 
-popup.style.display="none";
+  popup.style.display="none";
 
-showLoading("Loading report data...");
+  showLoading();
 
-document.getElementById("mesyuarat").innerText = mesyuarat;
+  document.getElementById("mesyuarat").innerText = mesyuarat;
 
-let data = await postAPI({
-  action:"report",
-  tarikh:tarikhEl.value,
-  mesyuarat:mesyuarat
-});
+  let tarikh = document.getElementById("tarikh").value;
 
-hideLoading();
+  let data = await postAPI({
+    action:"report",
+    tarikh:tarikh,
+    mesyuarat:mesyuarat
+  });
 
-let tbody=document.getElementById("tbody");
-tbody.innerHTML="";
+  hideLoading();
 
-if(!Array.isArray(data) || data.length===0){
-tbody.innerHTML="<tr><td colspan='7'>Tiada data</td></tr>";
-return;
+  let tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+
+  if(!Array.isArray(data) || data.length === 0){
+    tbody.innerHTML = "<tr><td colspan='7'>Tiada data</td></tr>";
+    return;
+  }
+
+  data.forEach((r,i)=>{
+    tbody.innerHTML += `
+    <tr>
+      <td>${i+1}</td>
+      <td>${r.nama || "-"}</td>
+      <td>${r.jawatan || "-"}</td>
+      <td>${r.bahagian || "-"}</td>
+      <td>${r.tarikh || "-"}</td>
+      <td>${r.masa || "-"}</td>
+      <td>${r.status || "-"}</td>
+    </tr>`;
+  });
+
 }
 
-data.forEach((r,i)=>{
-tbody.innerHTML += `
-<tr>
-<td>${i+1}</td>
-<td>${r.nama || "-"}</td>
-<td>${r.jawatan || "-"}</td>
-<td>${r.bahagian || "-"}</td>
-<td>${r.tarikh || "-"}</td>
-<td>${r.masa || "-"}</td>
-<td>${r.status || "-"}</td>
-</tr>
-`;
-});
-
-}
-
-/* =========================
-   PRINT PDF
-========================= */
+/* ================= PDF ================= */
 async function downloadPDF(){
 
-let tarikh = tarikhEl.value;
-let mesyuarat = document.getElementById("mesyuarat").innerText;
+  let tarikh = document.getElementById("tarikh").value;
+  let mesyuarat = document.getElementById("mesyuarat").innerText;
 
-if(!tarikh || mesyuarat === "-"){
-alert("Sila pilih tarikh & mesyuarat dahulu");
-return;
+  if(!tarikh || mesyuarat === "-"){
+    alert("Sila pilih tarikh & mesyuarat");
+    return;
+  }
+
+  showLoading();
+
+  let res = await postAPI({
+    action:"pdf",
+    tarikh:tarikh,
+    mesyuarat:mesyuarat
+  });
+
+  hideLoading();
+
+  if(res && res.url){
+    window.open(res.url,"_blank");
+  }else{
+    alert("Gagal generate PDF");
+  }
 }
 
-showLoading("Generating PDF report...");
-
-let res = await postAPI({
-  action:"pdf",
-  tarikh:tarikh,
-  mesyuarat:mesyuarat
-});
-
-hideLoading();
-
-if(res && res.url){
-window.open(res.url,"_blank");
-}else{
-alert("Gagal generate PDF");
-}
-
-}
-
+/* ================= HELPERS ================= */
 function formatDDMMYYYY(dateStr){
 
   if(!dateStr) return "";
@@ -377,7 +328,11 @@ function formatDDMMYYYY(dateStr){
   let month = String(d.getMonth()+1).padStart(2,'0');
   let year = d.getFullYear();
 
-  return day + month + year; // DDMMYYYY
+  return day + month + year;
+}
+
+function closePopup(){
+  popup.style.display="none";
 }
 
 </script>
