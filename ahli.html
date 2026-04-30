@@ -166,7 +166,7 @@ button:hover{transform:scale(1.02);}
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbz4ZlaAnBls0vy0WQ9XLEQvdgOxA5sMCVyXerZuHB4noEAsCNDju4kDzrG_geh4oOxhYw/exec";
+const API = "https://script.google.com/macros/s/AKfycbwkMrH2Yf3jOJ2h-G5KzTxWLuEDfWpw31MsFVq8W73W9yQA5UP5kb7S6tQQrS7v3PJfkg/exec";
 
 window.onload = () => document.getElementById("icInput").focus();
 
@@ -200,8 +200,10 @@ async function searchIC(){
 
     let res = await fetch(API, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: new URLSearchParams({
         action: "searchNama",
         ic: ic
       })
