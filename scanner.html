@@ -83,6 +83,7 @@ th{
   border-radius:12px;
   opacity:0;
   visibility:hidden;
+  transition:0.3s;
 }
 .popup.show{
   opacity:1;
@@ -104,10 +105,7 @@ button{
 
 <h2>📷 Scanner Kehadiran MDS</h2>
 
-<!-- 🔥 INFO MESYUARAT -->
-<div class="info" id="infoBox">
-Loading info mesyuarat...
-</div>
+<div class="info" id="infoBox">Loading info...</div>
 
 <div id="statusBox" class="ready">🟢 Sedia scan</div>
 
@@ -131,14 +129,14 @@ Loading info mesyuarat...
 </div>
 
 <div id="popup" class="popup">
-<h3>✔ Berjaya</h3>
-<p id="pNama"></p>
-<p id="pJawatan"></p>
+<h3 style="color:green;">✔ Berjaya</h3>
+<p id="pNama" style="font-weight:bold;"></p>
+<p id="pJawatan" style="font-weight:bold;"></p>
 </div>
 
 <script>
 
-const API="https://script.google.com/macros/s/AKfycbyIchlFajTUl6XoMQtTDgQbRDVTeCYlxRyCsIkb-U051w4b9MNbDwrqMovgraCYhakjbA/exec";
+const API = "https://script.google.com/macros/s/AKfycbyIchlFajTUl6XoMQtTDgQbRDVTeCYlxRyCsIkb-U051w4b9MNbDwrqMovgraCYhakjbA/exec";
 
 let data = JSON.parse(sessionStorage.getItem("mds_data") || "{}");
 
@@ -154,17 +152,13 @@ const pNama = document.getElementById("pNama");
 const pJawatan = document.getElementById("pJawatan");
 const infoBox = document.getElementById("infoBox");
 
-/* =========================
-   CHECK SESSION
-========================= */
+/* ================= CHECK SESSION ================= */
 if(!data.mesyuarat){
-alert("Tiada data mesyuarat");
-window.location.href="dashboard.html";
+  alert("Tiada data mesyuarat");
+  window.location.href="dashboard.html";
 }
 
-/* =========================
-   DISPLAY INFO MESYUARAT
-========================= */
+/* ================= INFO ================= */
 infoBox.innerHTML = `
 <b>📌 Nama Mesyuarat:</b> ${data.mesyuarat}<br>
 📅 <b>Tarikh:</b> ${data.tarikh}<br>
@@ -172,121 +166,126 @@ infoBox.innerHTML = `
 📍 <b>Tempat:</b> ${data.tempat}
 `;
 
-/* =========================
-   ANTI DOUBLE SCAN
-========================= */
+/* ================= ANTI DOUBLE SCAN ================= */
 function scanKey(id){
-return `mds_${id}_${data.tarikh}_${data.mesyuarat}`;
+  return `mds_${id}_${data.tarikh}_${data.mesyuarat}`;
 }
 
 function alreadyScanned(id){
-return localStorage.getItem(scanKey(id)) !== null;
+  return localStorage.getItem(scanKey(id));
 }
 
 function markScanned(id){
-localStorage.setItem(scanKey(id),"1");
+  localStorage.setItem(scanKey(id),"1");
 }
 
-/* =========================
-   STATUS
-========================= */
+/* ================= STATUS ================= */
 function setStatus(type,msg){
-statusBox.className = type;
-statusBox.innerText = msg;
+  statusBox.className = type;
+  statusBox.innerText = msg;
 }
 
-/* =========================
-   TABLE
-========================= */
+/* ================= TABLE ================= */
 function addRow(res){
+  let tr = document.createElement("tr");
 
-let tr = document.createElement("tr");
+  tr.innerHTML = `
+  <td><b>${res.nama}</b></td>
+  <td><b>${res.jawatan}</b></td>
+  <td>${res.bahagian || "-"}</td>
+  <td>${res.masa}</td>
+  <td>${res.status}</td>
+  `;
 
-tr.innerHTML = `
-<td>${res.nama}</td>
-<td>${res.jawatan}</td>
-<td>${res.bahagian || "-"}</td>
-<td>${res.masa}</td>
-<td>${res.status}</td>
-`;
-
-tbody.prepend(tr);
-
+  tbody.prepend(tr);
 }
 
-/* =========================
-   QR SCANNER
-========================= */
+/* ================= SAFE RESTART ================= */
+function restart(){
+  setTimeout(startQR, 600);
+}
+
+/* ================= QR SCANNER ================= */
 function startQR(){
 
-scanner = new Html5Qrcode("reader");
+  scanner = new Html5Qrcode("reader");
 
-scanner.start(
-  { facingMode:"environment" },
-  { fps:10, qrbox:250 },
-  text => {
+  scanner.start(
+    { facingMode:"environment" },
+    { fps:10, qrbox:250 },
+    text => {
 
-    if(lock) return;
-    lock = true;
+      if(lock) return;
+      lock = true;
 
-    setStatus("processing","🟡 Memproses...");
+      setStatus("processing","🟡 Memproses...");
 
-    scanner.stop().catch(()=>{});
+      scanner.stop().catch(()=>{});
 
-    if(alreadyScanned(text)){
-      setStatus("error","⚠ Sudah scan mesyuarat ini");
-      lock=false;
-      startQR();
-      return;
-    }
-
-    fetch(API,{
-      method:"POST",
-      body:JSON.stringify({
-        nama:text,
-        jawatan:"-",
-        bahagian:"-",
-        tarikh:data.tarikh,
-        mesyuarat:data.mesyuarat
-      })
-    })
-    .then(r=>r.json())
-    .then(res=>{
-
-      markScanned(text);
-
-      beep.play();
-
-      pNama.innerText = res.nama;
-      pJawatan.innerText = res.jawatan;
-
-      popup.classList.add("show");
-
-      addRow(res);
-
-      setStatus("success","✔ Berjaya");
-
-      setTimeout(()=>{
-        popup.classList.remove("show");
+      if(alreadyScanned(text)){
+        setStatus("error","⚠ Sudah scan");
         lock=false;
-        setStatus("ready","🟢 Sedia scan");
-        startQR();
-      },1200);
+        restart();
+        return;
+      }
 
-    })
-    .catch(()=>{
-      setStatus("error","❌ Error server");
-      lock=false;
-      startQR();
-    });
+      fetch(API,{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          nama:text,
+          jawatan:"-",
+          bahagian:"-",
+          tarikh:data.tarikh,
+          mesyuarat:data.mesyuarat
+        })
+      })
+      .then(r=>r.json())
+      .then(res=>{
 
-  }
-);
+        if(res.status === "error"){
+          setStatus("error","❌ "+res.message);
+          lock=false;
+          restart();
+          return;
+        }
 
+        markScanned(text);
+        beep.play();
+
+        pNama.innerText = res.nama;
+        pJawatan.innerText = res.jawatan;
+
+        popup.classList.add("show");
+
+        addRow(res);
+
+        setStatus("success","✔ Berjaya");
+
+        setTimeout(()=>{
+          popup.classList.remove("show");
+          lock=false;
+          setStatus("ready","🟢 Sedia scan");
+          restart();
+        },1200);
+
+      })
+      .catch(err=>{
+        console.log(err);
+        setStatus("error","❌ Server error");
+        lock=false;
+        restart();
+      });
+
+    }
+  );
 }
 
+/* ================= BACK ================= */
 function back(){
-window.location.href="dashboard.html";
+  window.location.href="dashboard.html";
 }
 
 startQR();
