@@ -15,6 +15,7 @@ body{
   text-align:center;
 }
 
+/* BOX */
 .box{
   background:white;
   color:black;
@@ -24,12 +25,14 @@ body{
   max-width:900px;
 }
 
+/* INPUT */
 input{
   padding:10px;
   border-radius:8px;
   border:1px solid #ccc;
 }
 
+/* BUTTON */
 button{
   padding:10px 15px;
   border:none;
@@ -42,6 +45,7 @@ button{
 
 button:hover{opacity:0.85}
 
+/* INFO */
 .info{
   background:white;
   color:black;
@@ -52,6 +56,7 @@ button:hover{opacity:0.85}
   max-width:900px;
 }
 
+/* TABLE */
 table{
   width:100%;
   border-collapse:collapse;
@@ -80,7 +85,8 @@ th{background:#f2f2f2}
   width:320px;
   border-radius:10px;
   display:none;
-  z-index:999;
+  z-index:2000;
+  pointer-events:auto;
 }
 
 /* LOADING */
@@ -94,7 +100,8 @@ th{background:#f2f2f2}
   justify-content:center;
   align-items:center;
   flex-direction:column;
-  z-index:1000;
+  z-index:1500;
+  pointer-events:none;
 }
 
 .spinner{
@@ -162,47 +169,46 @@ th{background:#f2f2f2}
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbw6zVoZVBNcsuvt-VE0My1DC-xQKYeeQaaIClelN372dx8CxfWwqTS5pOS1U13jWem6Og/exec";
+const API = "https://script.google.com/macros/s/AKfycbwdE0iwiU0WalvZbhnkB3TU6p5WYF1wmyQ6Gzs1s7YN_CAq2GhjsbZiTN4tOc_50gFTQA/exec";
 
 const popup = document.getElementById("popup");
 
-/* LOGIN */
+/* LOGIN CHECK */
 if(sessionStorage.getItem("mds_login") !== "true"){
   alert("Sila login dahulu");
   window.location.href="login.html";
 }
 
-/* LOADING */
-function showLoading(){loading.style.display="flex"}
-function hideLoading(){loading.style.display="none"}
+/* LOADING SAFE */
+function showLoading(){
+  document.getElementById("loading").style.display="flex";
+}
 
-/* API FIXED */
+function hideLoading(){
+  document.getElementById("loading").style.display="none";
+}
+
+/* SAFE FETCH (CORS FRIENDLY) */
 async function postAPI(payload){
 
-  let url = API;
-
-  let form = new URLSearchParams();
-
-  Object.keys(payload).forEach(k=>{
-    form.append(k, payload[k]);
-  });
-
   try{
-
-    let res = await fetch(url, {
-      method: "POST",
-      body: form
+    let res = await fetch(API,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/x-www-form-urlencoded"
+      },
+      body:new URLSearchParams(payload)
     });
 
     return await res.json();
 
   }catch(err){
     console.log(err);
-    return null;
+    return [];
   }
 }
 
-/* MESYUARAT */
+/* LOAD MESYUARAT */
 async function loadMesyuarat(){
 
   let tarikh = document.getElementById("tarikh").value;
@@ -213,7 +219,7 @@ async function loadMesyuarat(){
 
   showLoading();
 
-  document.getElementById("tarikhInfo").innerText = tarikh;
+  document.getElementById("tarikhInfo").innerText = formatDate(tarikh);
 
   let data = await postAPI({
     action:"listMesyuarat",
@@ -226,7 +232,7 @@ async function loadMesyuarat(){
   list.innerHTML = "";
 
   if(!data || data.length === 0){
-    list.innerHTML = "<p>Tiada mesyuarat dijumpai</p>";
+    list.innerHTML = "<p>Tiada mesyuarat</p>";
     popup.style.display="block";
     return;
   }
@@ -313,26 +319,22 @@ async function downloadPDF(){
   }
 }
 
-/* DATE SAFE */
-function formatDate(dateStr){
+/* FORMAT DATE FIXED */
+function formatDate(d){
 
-  if(!dateStr) return "";
+  if(!d) return "";
 
-  // input dari <input type="date"> = yyyy-mm-dd
-  if(dateStr.includes("-")){
-    let p = dateStr.split("-");
+  if(d.includes("-")){
+    let p = d.split("-");
     return `${p[2]}/${p[1]}/${p[0]}`;
   }
 
-  let d = new Date(dateStr);
+  return d;
+}
 
-  if(isNaN(d)) return dateStr;
-
-  let dd = String(d.getDate()).padStart(2,'0');
-  let mm = String(d.getMonth()+1).padStart(2,'0');
-  let yyyy = d.getFullYear();
-
-  return `${dd}/${mm}/${yyyy}`;
+/* POPUP CLOSE FIX */
+function closePopup(){
+  document.getElementById("popup").style.display="none";
 }
 
 </script>
