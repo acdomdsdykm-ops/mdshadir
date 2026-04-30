@@ -136,7 +136,7 @@ button{
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbzhme4eh1IWHNt-SIHFgPkCJBUhVr9obE0MvtuTQ4rJamqc5vkF6DYv_iipZWat2fqThQ/exec";
+const API = "https://script.google.com/macros/s/AKfycbzW425dCcxwGVZVK3_93u9T_QlvdVnPEiJIHLkj2TZED0ZYL2NDLx5qVOXCZNriqarXMg/exec";
 
 let data = JSON.parse(sessionStorage.getItem("mds_data") || "{}");
 
@@ -230,18 +230,19 @@ function startQR(){
       }
 
       fetch(API,{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-          nama:text,
-          jawatan:"-",
-          bahagian:"-",
-          tarikh:data.tarikh,
-          mesyuarat:data.mesyuarat
-        })
-      })
+  method:"POST",
+  headers:{
+    "Content-Type":"application/x-www-form-urlencoded"
+  },
+  body:new URLSearchParams({
+    action:"scan",
+    nama:text,
+    jawatan:"-",
+    bahagian:"-",
+    tarikh:data.tarikh,
+    mesyuarat:data.mesyuarat
+  })
+})
       .then(r=>r.json())
       .then(res=>{
 
