@@ -145,30 +145,8 @@ let lock = false;
 
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-const statusBox = document.getElementById("statusBox");
-const tbody = document.getElementById("tbody");
-const popup = document.getElementById("popup");
-const pNama = document.getElementById("pNama");
-const pJawatan = document.getElementById("pJawatan");
-const infoBox = document.getElementById("infoBox");
-
-/* ================= CHECK SESSION ================= */
-if(!data.mesyuarat){
-  alert("Tiada data mesyuarat");
-  window.location.href="dashboard.html";
-}
-
-/* ================= INFO ================= */
-infoBox.innerHTML = `
-<b>📌 Nama Mesyuarat:</b> ${data.mesyuarat}<br>
-📅 <b>Tarikh:</b> ${data.tarikh}<br>
-⏰ <b>Masa:</b> ${data.mula} - ${data.tamat}<br>
-📍 <b>Tempat:</b> ${data.tempat}
-`;
-
-/* ================= ANTI DOUBLE SCAN ================= */
 function scanKey(id){
-  return `mds_${id}_${data.tarikh}_${data.mesyuarat}`;
+  return `mds_${data.mesyuarat}_${data.tarikh}_${id}`;
 }
 
 function alreadyScanned(id){
@@ -176,120 +154,91 @@ function alreadyScanned(id){
 }
 
 function markScanned(id){
-  localStorage.setItem(scanKey(id),"1");
+  localStorage.setItem(scanKey(id), "1");
 }
 
-/* ================= STATUS ================= */
 function setStatus(type,msg){
+  const statusBox = document.getElementById("statusBox");
   statusBox.className = type;
   statusBox.innerText = msg;
 }
 
-/* ================= TABLE ================= */
-function addRow(res){
-  let tr = document.createElement("tr");
-
-  tr.innerHTML = `
-  <td><b>${res.nama}</b></td>
-  <td><b>${res.jawatan}</b></td>
-  <td>${res.bahagian || "-"}</td>
-  <td>${res.masa}</td>
-  <td>${res.status}</td>
-  `;
-
-  tbody.prepend(tr);
-}
-
-/* ================= SAFE RESTART ================= */
 function restart(){
-  setTimeout(startQR, 600);
-}
-
-/* ================= QR SCANNER ================= */
-function startQR(){
-
-  scanner = new Html5Qrcode("reader");
-
-  scanner.start(
-    { facingMode:"environment" },
-    { fps:10, qrbox:250 },
-    text => {
-
-      if(lock) return;
-      lock = true;
-
-      setStatus("processing","🟡 Memproses...");
-
-      scanner.stop().catch(()=>{});
-
-      if(alreadyScanned(text)){
-        setStatus("error","⚠ Sudah scan");
-        lock=false;
-        restart();
-        return;
-      }
-
-      fetch(API,{
-  method:"POST",
-  headers:{
-    "Content-Type":"application/x-www-form-urlencoded"
-  },
-  body:new URLSearchParams({
-    action:"scan",
-    nama:text,
-    jawatan:"-",
-    bahagian:"-",
-    tarikh:data.tarikh,
-    mesyuarat:data.mesyuarat
-  })
-})
-      .then(r=>r.json())
-      .then(res=>{
-
-        if(res.status === "error"){
-          setStatus("error","❌ "+res.message);
-          lock=false;
-          restart();
-          return;
-        }
-
-        markScanned(text);
-        beep.play();
-
-        pNama.innerText = res.nama;
-        pJawatan.innerText = res.jawatan;
-
-        popup.classList.add("show");
-
-        addRow(res);
-
-        setStatus("success","✔ Berjaya");
-
-        setTimeout(()=>{
-          popup.classList.remove("show");
-          lock=false;
-          setStatus("ready","🟢 Sedia scan");
-          restart();
-        },1200);
-
-      })
-      .catch(err=>{
-        console.log(err);
-        setStatus("error","❌ Server error");
-        lock=false;
-        restart();
-      });
-
+  setTimeout(() => {
+    if(scanner){
+      scanner.start({ facingMode:"environment" }, { fps:10, qrbox:250 }, onScan);
     }
-  );
+  }, 800);
 }
 
-/* ================= BACK ================= */
-function back(){
-  window.location.href="dashboard.html";
-}
+/* ================= SCAN HANDLER ================= */
+function onScan(text){
 
-startQR();
+  if(lock) return;
+  lock = true;
+
+  setStatus("processing","🟡 Memproses...");
+
+  let qrData = text;
+
+  // Jika QR JSON, auto parse
+  try {
+    let parsed = JSON.parse(text);
+    qrData = parsed.id || parsed.nama || text;
+  } catch(e){}
+
+  if(alreadyScanned(qrData)){
+    setStatus("error","⚠ Sudah scan");
+    lock = false;
+    restart();
+    return;
+  }
+
+  fetch(API,{
+    method:"POST",
+    body:new URLSearchParams({
+      action:"scan",
+      nama: qrData,
+      jawatan:"-",
+      bahagian:"-",
+      tarikh:data.tarikh,
+      mesyuarat:data.mesyuarat
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+
+    if(res.status === "error"){
+      setStatus("error","❌ "+res.message);
+      lock = false;
+      restart();
+      return;
+    }
+
+    markScanned(qrData);
+    beep.play();
+
+    document.getElementById("pNama").innerText = res.nama;
+    document.getElementById("pJawatan").innerText = res.jawatan;
+
+    document.getElementById("popup").classList.add("show");
+
+    addRow(res);
+
+    setStatus("success","✔ Berjaya");
+
+    setTimeout(()=>{
+      document.getElementById("popup").classList.remove("show");
+      lock = false;
+      setStatus("ready","🟢 Sedia scan");
+      restart();
+    },1200);
+
+  })
+  .catch(err=>{
+    console.log(err);
+    setStatus("error","❌ Server error");
+    lock = false
 
 </script>
 
