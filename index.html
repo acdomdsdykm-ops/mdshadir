@@ -16,26 +16,57 @@ body{
   background:linear-gradient(135deg,#064e3b,#022c22);
   color:white;
 }
+
+.box{
+  padding:20px;
+  background:rgba(255,255,255,0.08);
+  border-radius:12px;
+  backdrop-filter: blur(6px);
+}
+
 .loader{
   font-size:18px;
+  font-weight:bold;
+}
+
+.small{
+  font-size:12px;
+  opacity:0.8;
+  margin-top:8px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="loader">
-  ⏳ Membuka Sistem Kehadiran...
+<div class="box">
+  <div class="loader">⏳ Membuka Sistem Kehadiran...</div>
+  <div class="small">Sila tunggu sebentar</div>
 </div>
 
 <script>
 
-/* CHECK LOGIN */
-if(sessionStorage.getItem("mds_login")==="true"){
+function goNext(){
+
+try{
+
+let login = sessionStorage.getItem("mds_login");
+
+if(login === "true"){
   window.location.replace("dashboard.html");
 }else{
   window.location.replace("login.html");
 }
+
+}catch(e){
+  // fallback kalau storage error
+  window.location.replace("login.html");
+}
+
+}
+
+/* delay sikit supaya UI nampak smooth */
+setTimeout(goNext, 600);
 
 </script>
 
