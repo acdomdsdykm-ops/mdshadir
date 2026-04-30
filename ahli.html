@@ -382,8 +382,8 @@ function searchIC(){
     document.getElementById("jawatan").innerText=res.jawatan;
     document.getElementById("bahagian").innerText=res.bahagian;
 
-    let qr="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data="+encodeURIComponent(res.id);
-
+    let qr = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(res.id)}&t=${Date.now()}`;
+    
     document.getElementById("qrcode").innerHTML=`<img src="${qr}">`;
 
   })
