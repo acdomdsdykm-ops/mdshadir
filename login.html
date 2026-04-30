@@ -259,29 +259,30 @@ async function login(){
       headers:{
         "Content-Type":"application/x-www-form-urlencoded"
       },
-     body:new URLSearchParams({
-  action:"login",
-  username:user,
-  password:pass
-})
+      body:new URLSearchParams({
+        action:"login",
+        username:user,
+        password:pass
+      })
+    }); // ✅ FIX: tutup fetch
 
     let data = await res.json();
-
-    if(data.role === "admin"){
-  window.location.href="dashboard_admin.html";
-}else{
-  window.location.href="dashboard_user.html";
-}
 
     if(!data.success){
       error.innerText = data.message || "Login gagal";
       return;
     }
 
+    // simpan session
     sessionStorage.setItem("mds_login","true");
     sessionStorage.setItem("mds_user",JSON.stringify(data));
 
-    window.location.href="dashboard.html";
+    // redirect ikut role
+    if(data.role === "admin"){
+      window.location.href="dashboard_admin.html";
+    }else{
+      window.location.href="dashboard_user.html";
+    }
 
   }catch(err){
     error.innerText="Ralat server / API";
@@ -289,7 +290,6 @@ async function login(){
   }finally{
     hideLoading();
   }
-
 }
 
 /* ================= REPORT ================= */
