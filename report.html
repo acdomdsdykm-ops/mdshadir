@@ -14,6 +14,7 @@ body{
   text-align:center;
 }
 
+/* BOX */
 .box{
   background:white;
   color:black;
@@ -22,12 +23,14 @@ body{
   border-radius:12px;
 }
 
+/* INPUT */
 input{
   padding:10px;
   border-radius:8px;
   border:1px solid #ccc;
 }
 
+/* BUTTON */
 button{
   padding:10px 15px;
   border:none;
@@ -38,6 +41,21 @@ button{
   margin:5px;
 }
 
+button:disabled{
+  background:#999;
+}
+
+/* INFO */
+.info{
+  background:white;
+  color:black;
+  padding:10px;
+  border-radius:10px;
+  margin:10px;
+  font-weight:bold;
+}
+
+/* TABLE */
 table{
   width:100%;
   border-collapse:collapse;
@@ -56,15 +74,6 @@ th{
   background:#f2f2f2;
 }
 
-.info{
-  background:white;
-  color:black;
-  padding:10px;
-  border-radius:10px;
-  margin:10px;
-  font-weight:bold;
-}
-
 /* POPUP */
 .popup{
   position:fixed;
@@ -78,6 +87,12 @@ th{
   border-radius:10px;
   display:none;
   z-index:999;
+  animation:fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translate(-50%,-55%);}
+  to{opacity:1; transform:translate(-50%,-50%);}
 }
 
 .popup button{
@@ -85,9 +100,49 @@ th{
   margin-top:8px;
 }
 
+/* LOADING OVERLAY */
+#loading{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.85);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  z-index:1000;
+}
+
+.spinner{
+  width:60px;
+  height:60px;
+  border:6px solid #ccc;
+  border-top:6px solid #2ecc71;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+  100%{transform:rotate(360deg);}
+}
+
+.loading-text{
+  margin-top:12px;
+  font-size:15px;
+  font-weight:bold;
+  animation:blink 1s infinite;
+}
+
+@keyframes blink{
+  0%,100%{opacity:1;}
+  50%{opacity:0.4;}
+}
+
 /* PRINT */
 @media print{
-  button,.popup{
+  button,.popup,#loading{
     display:none !important;
   }
   body{
@@ -117,13 +172,6 @@ th{
 📅 Tarikh: <span id="tarikhInfo">-</span>
 </div>
 
-<!-- POPUP -->
-<div id="popup" class="popup">
-<h3>Pilih Mesyuarat</h3>
-<div id="list"></div>
-<button onclick="popup.style.display='none'">Tutup</button>
-</div>
-
 <!-- TABLE -->
 <div class="box">
 <table>
@@ -142,6 +190,19 @@ th{
 </table>
 </div>
 
+<!-- POPUP -->
+<div id="popup" class="popup">
+<h3>Pilih Mesyuarat</h3>
+<div id="list"></div>
+<button onclick="popup.style.display='none'">Tutup</button>
+</div>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Loading...</div>
+</div>
+
 <script>
 
 const API = "https://script.google.com/macros/s/AKfycbySRtR_Y4_jsH9d2uXf5qAh4T-EKiiFsnKl6C4ZqGqQp_OO8z5mjR99MWmKwwEhEc-Wyw/exec";
@@ -150,7 +211,27 @@ const popup = document.getElementById("popup");
 const tarikhEl = document.getElementById("tarikh");
 
 /* =========================
-   SAFE API CALL
+   LOGIN CHECK
+========================= */
+if(sessionStorage.getItem("mds_login") !== "true"){
+  alert("Sila login dahulu");
+  window.location.href="login.html";
+}
+
+/* =========================
+   LOADING CONTROL
+========================= */
+function showLoading(text){
+  document.getElementById("loadingText").innerText = text || "Loading...";
+  document.getElementById("loading").style.display = "flex";
+}
+
+function hideLoading(){
+  document.getElementById("loading").style.display = "none";
+}
+
+/* =========================
+   API CALL
 ========================= */
 async function postAPI(payload){
 
@@ -182,12 +263,16 @@ alert("Sila pilih tarikh");
 return;
 }
 
+showLoading("Loading report data...");
+
 document.getElementById("tarikhInfo").innerText = tarikhEl.value;
 
 let data = await postAPI({
   action:"listMesyuarat",
   tarikh:tarikhEl.value
 });
+
+hideLoading();
 
 let list=document.getElementById("list");
 list.innerHTML="";
@@ -201,9 +286,7 @@ return;
 data.forEach(m=>{
 let btn=document.createElement("button");
 btn.innerText=m;
-
 btn.onclick=()=>loadReport(m);
-
 list.appendChild(btn);
 });
 
@@ -217,6 +300,8 @@ async function loadReport(mesyuarat){
 
 popup.style.display="none";
 
+showLoading("Loading report data...");
+
 document.getElementById("mesyuarat").innerText = mesyuarat;
 
 let data = await postAPI({
@@ -224,6 +309,8 @@ let data = await postAPI({
   tarikh:tarikhEl.value,
   mesyuarat:mesyuarat
 });
+
+hideLoading();
 
 let tbody=document.getElementById("tbody");
 tbody.innerHTML="";
@@ -250,7 +337,7 @@ tbody.innerHTML += `
 }
 
 /* =========================
-   PRINT PDF (APPS SCRIPT)
+   PRINT PDF
 ========================= */
 async function downloadPDF(){
 
@@ -262,11 +349,15 @@ alert("Sila pilih tarikh & mesyuarat dahulu");
 return;
 }
 
+showLoading("Generating PDF report...");
+
 let res = await postAPI({
   action:"pdf",
   tarikh:tarikh,
   mesyuarat:mesyuarat
 });
+
+hideLoading();
 
 if(res && res.url){
 window.open(res.url,"_blank");
