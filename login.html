@@ -14,7 +14,6 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
-  flex-direction:column;
   background:linear-gradient(135deg,#064e3b,#022c22);
   color:white;
 }
@@ -22,7 +21,8 @@ body{
 /* ================= LOADING ================= */
 .loading{
   position:fixed;
-  top:0;left:0;
+  top:0;
+  left:0;
   width:100%;
   height:100vh;
   background:rgba(0,0,0,0.65);
@@ -37,7 +37,7 @@ body{
   width:60px;
   height:60px;
   border:5px solid rgba(255,255,255,0.2);
-  border-top:5px solid #2ecc71;
+  border-top:5px solid #10b981;
   border-radius:50%;
   animation:spin 1s linear infinite;
 }
@@ -47,24 +47,86 @@ body{
   100%{transform:rotate(360deg);}
 }
 
-/* ================= PANEL ================= */
-.panel{
-  background:white;
-  color:black;
-  width:330px;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.3);
+/* ================= CARD ================= */
+.card{
+  width:360px;
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(18px);
+  border:1px solid rgba(255,255,255,0.2);
+  border-radius:20px;
+  padding:25px;
+  text-align:center;
+  box-shadow:0 25px 60px rgba(0,0,0,0.4);
+  position:relative;
+  overflow:hidden;
+}
+
+/* watermark */
+.card::before{
+  content:"";
+  position:absolute;
+  width:320px;
+  height:320px;
+  background:url('mds.png') no-repeat center;
+  background-size:contain;
+  opacity:0.05;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+}
+
+/* content above watermark */
+.card > *{
+  position:relative;
+}
+
+/* ================= LOGO ================= */
+.logo{
+  width:80px;
+  margin-bottom:10px;
+}
+
+/* ================= TITLE ================= */
+.title{
+  font-size:16px;
+  font-weight:bold;
+}
+
+.subtitle{
+  font-size:12px;
+  opacity:0.9;
+}
+
+.address{
+  font-size:10px;
+  opacity:0.8;
+  margin-bottom:10px;
+  line-height:1.4;
+}
+
+/* ================= SYSTEM LABEL ================= */
+.system-label{
+  font-size:13px;
+  font-weight:bold;
+  margin:10px 0;
+  padding:8px;
+
+  background:rgba(255,255,255,0.15);
+  border:1px solid rgba(255,255,255,0.25);
+  border-radius:10px;
+
+  letter-spacing:0.5px;
 }
 
 /* ================= INPUT ================= */
 input{
-  width:95%;
-  padding:10px;
+  width:90%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
   margin:8px 0;
-  border-radius:8px;
-  border:1px solid #ccc;
   outline:none;
+  text-align:center;
 }
 
 /* ================= BUTTON ================= */
@@ -73,37 +135,44 @@ button{
   padding:12px;
   border:none;
   border-radius:10px;
-  cursor:pointer;
   font-weight:bold;
+  cursor:pointer;
   margin-top:6px;
 }
 
 /* LOGIN */
 .login-btn{
-  background:#3498db;
+  background:#10b981;
   color:white;
 }
-.login-btn:hover{background:#2980b9;}
+.login-btn:hover{background:#0f9b7a;}
 
 /* REPORT */
 .report-btn{
-  background:#2ecc71;
+  background:#3b82f6;
   color:white;
 }
-.report-btn:hover{background:#27ae60;}
+.report-btn:hover{background:#2563eb;}
 
-/* QR STAFF */
+/* QR */
 .qr-btn{
-  background:#f39c12;
+  background:#f59e0b;
   color:white;
 }
-.qr-btn:hover{background:#d68910;}
+.qr-btn:hover{background:#d97706;}
 
 /* ERROR */
 #error{
-  color:red;
+  color:#ffb3b3;
   font-size:12px;
   margin-top:5px;
+}
+
+/* FOOTER */
+.footer{
+  font-size:10px;
+  margin-top:10px;
+  opacity:0.7;
 }
 
 </style>
@@ -114,26 +183,43 @@ button{
 <!-- LOADING -->
 <div id="loading" class="loading">
   <div class="spinner"></div>
-  <p>Memproses...</p>
+  <p>Memproses sistem...</p>
 </div>
 
-<h2>🏢 Sistem Kehadiran MDS</h2>
+<!-- CARD -->
+<div class="card">
 
-<div class="panel">
+  <!-- LOGO -->
+  <img src="mds.png" class="logo">
 
+  <!-- TITLE -->
+  <div class="title">MAJLIS DAERAH SIMUNJAN</div>
+  <div class="subtitle">Sistem Kehadiran Staf</div>
+
+  <div class="address">
+    Lot 805, Gunong Ngeli New Service Centre,<br>
+    94800 Simunjan, Sarawak
+  </div>
+
+  <!-- SYSTEM LABEL -->
+  <div class="system-label">
+    Sistem Kehadiran Digital MDS
+  </div>
+
+  <!-- INPUT -->
   <input id="user" placeholder="Username">
   <input id="pass" type="password" placeholder="Password">
 
-  <!-- LOGIN -->
+  <!-- BUTTONS -->
   <button class="login-btn" onclick="login()">Login</button>
-
-  <!-- REPORT -->
   <button class="report-btn" onclick="goReport()">🔍 Cari Report</button>
-
-  <!-- QR CODE STAFF -->
-  <button class="qr-btn" onclick="goQR()">📱 QRCode Staf</button>
+  <button class="qr-btn" onclick="goQR()">📱 QR Code Staf</button>
 
   <p id="error"></p>
+
+  <div class="footer">
+    © MDS Attendance System
+  </div>
 
 </div>
 
@@ -203,7 +289,7 @@ function goReport(){
   window.location.href="report.html";
 }
 
-/* ================= QR CODE STAFF ================= */
+/* ================= QR ================= */
 function goQR(){
   window.location.href="ahli.html";
 }
