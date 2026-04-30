@@ -203,15 +203,16 @@ return;
 setStatus("processing","🟡 Memproses...");
 
 scanner.stop().catch(()=>{});
-
+  
 fetch(API_URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain"},
 body:JSON.stringify({
-id:text,
-mesyuarat:data.mesyuarat,
-tarikh:data.tarikh,
-masa:data.masa
+nama: text,
+jawatan: "-",
+bahagian: "-",
+tarikh: data.tarikh,
+mesyuarat: data.mesyuarat
 })
 })
 .then(async r=>{
