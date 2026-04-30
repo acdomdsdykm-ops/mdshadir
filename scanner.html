@@ -15,13 +15,12 @@ body{
   margin:0;
 }
 
-h2{margin:10px 0;}
-
-#reader{
-  width:320px;
-  margin:10px auto;
+/* HEADER */
+h2{
+  margin:10px 0;
 }
 
+/* STATUS */
 #statusBox{
   width:300px;
   margin:10px auto;
@@ -34,6 +33,12 @@ h2{margin:10px 0;}
 .processing{background:#f59e0b;}
 .success{background:#2563eb;}
 .error{background:#dc2626;}
+
+/* SCANNER */
+#reader{
+  width:320px;
+  margin:10px auto;
+}
 
 /* TABLE */
 .table-box{
@@ -52,16 +57,14 @@ table{
 th,td{
   border:1px solid #ddd;
   padding:6px;
+  text-align:left;
+  word-break:break-word;
 }
 
 th{
   background:#16a34a;
   color:white;
 }
-
-/* STATUS */
-.status-Hadir{color:green;font-weight:bold;}
-.status-Duplicate{color:red;font-weight:bold;}
 
 /* POPUP */
 .popup{
@@ -82,6 +85,7 @@ th{
   visibility:visible;
 }
 
+/* BUTTON */
 button{
   background:red;
   color:white;
@@ -89,6 +93,7 @@ button{
   border:none;
   border-radius:8px;
   margin-top:10px;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -103,12 +108,15 @@ button{
 
 <button onclick="back()">⬅️ Kembali</button>
 
+<!-- TABLE -->
 <div class="table-box">
 <table>
 <thead>
 <tr>
+<th>Bil</th>
 <th>Nama</th>
 <th>Jawatan</th>
+<th>Bahagian</th>
 <th>Masa</th>
 <th>Status</th>
 </tr>
@@ -117,8 +125,9 @@ button{
 </table>
 </div>
 
+<!-- POPUP -->
 <div id="popup" class="popup">
-<h3>✔ BERJAYA</h3>
+<h3>✔ SCAN BERJAYA</h3>
 <p id="pNama"></p>
 <p id="pJawatan"></p>
 </div>
@@ -129,7 +138,9 @@ const API_URL="https://script.google.com/macros/s/AKfycbyLDt7eLt3-3KXd15xgoVVOEH
 
 let scanner;
 let lock=false;
+let bil=0;
 let sessionKey="";
+
 const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
 /* DATA SESSION */
@@ -153,28 +164,29 @@ return data.mesyuarat+"_"+data.tarikh+"_"+data.masa;
 
 function checkSession(){
 let newKey=getSessionKey();
+
 if(sessionKey !== newKey){
 sessionKey = newKey;
 tbody.innerHTML="";
+bil=0;
 console.log("🔄 Session reset");
 }
-}
-
-/* TIME */
-function nowTime(){
-return new Date().toLocaleTimeString();
 }
 
 /* ADD ROW */
 function addRow(res){
 
+bil++;
+
 let tr=document.createElement("tr");
 
 tr.innerHTML=`
+<td>${bil}</td>
 <td>${res.nama || "-"}</td>
 <td>${res.jawatan || "-"}</td>
-<td>${nowTime()}</td>
-<td class="status-${res.status || "Hadir"}">${res.status || "Hadir"}</td>
+<td>${res.bahagian || "-"}</td>
+<td>${res.masa || new Date().toLocaleTimeString()}</td>
+<td>${res.status || "Hadir"}</td>
 `;
 
 tbody.prepend(tr);
@@ -190,10 +202,10 @@ scanner.start(
 {fps:10,qrbox:250},
 text=>{
 
-/* VALIDATION */
 if(lock) return;
 lock=true;
 
+/* VALIDATION */
 if(!text || text.length < 3){
 setStatus("error","❌ QR tidak sah");
 lock=false;
@@ -203,16 +215,16 @@ return;
 setStatus("processing","🟡 Memproses...");
 
 scanner.stop().catch(()=>{});
-  
+
 fetch(API_URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain"},
 body:JSON.stringify({
-nama: text,
-jawatan: "-",
-bahagian: "-",
-tarikh: data.tarikh,
-mesyuarat: data.mesyuarat
+nama:text,
+jawatan:"-",
+bahagian:"-",
+tarikh:data.tarikh,
+mesyuarat:data.mesyuarat
 })
 })
 .then(async r=>{
@@ -225,11 +237,12 @@ checkSession();
 
 beep.play();
 
+/* POPUP */
 pNama.innerHTML="<b>"+res.nama+"</b>";
 pJawatan.innerHTML="<b>"+res.jawatan+"</b>";
-
 popup.classList.add("show");
 
+/* TABLE */
 addRow(res);
 
 setStatus("success","🔵 Berjaya");
