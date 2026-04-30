@@ -2,7 +2,7 @@
 <html lang="ms">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scanner MDS</title>
+<title>Scanner Kehadiran MDS</title>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 
@@ -15,11 +15,20 @@ body{
   margin:0;
 }
 
-#reader{
-  width:320px;
-  margin:auto;
+/* INFO BOX */
+#infoBox{
+  background:white;
+  color:black;
+  margin:10px auto;
+  padding:12px;
+  border-radius:10px;
+  width:90%;
+  max-width:400px;
+  text-align:left;
+  font-weight:bold;
 }
 
+/* STATUS */
 #statusBox{
   width:300px;
   margin:10px auto;
@@ -32,12 +41,20 @@ body{
 .success{background:#2563eb;}
 .error{background:#dc2626;}
 
+/* SCANNER */
+#reader{
+  width:320px;
+  margin:auto;
+}
+
+/* TABLE */
 table{
   width:100%;
   background:white;
   color:black;
   border-collapse:collapse;
   font-size:13px;
+  margin-top:10px;
 }
 
 th,td{
@@ -45,8 +62,12 @@ th,td{
   padding:6px;
 }
 
-th{background:#16a34a;color:white;}
+th{
+  background:#16a34a;
+  color:white;
+}
 
+/* POPUP */
 .popup{
   position:fixed;
   top:50%;
@@ -64,6 +85,7 @@ th{background:#16a34a;color:white;}
   visibility:visible;
 }
 
+/* BUTTON */
 button{
   margin-top:10px;
   padding:10px;
@@ -77,12 +99,19 @@ button{
 
 <body>
 
-<h2>📷 Scanner Kehadiran</h2>
+<h2>📷 Scanner Kehadiran MDS</h2>
+
+<!-- 🔥 INFO MESYUARAT -->
+<div id="infoBox">
+📌 Mesyuarat: <span id="mName">-</span><br>
+📅 Tarikh: <span id="mDate">-</span>
+</div>
 
 <div id="statusBox" class="ready">🟢 Sedia scan</div>
 
 <div id="reader"></div>
 
+<!-- TABLE -->
 <table>
 <thead>
 <tr>
@@ -97,6 +126,7 @@ button{
 <tbody id="tbody"></tbody>
 </table>
 
+<!-- POPUP -->
 <div id="popup" class="popup">
 <h3>✔ BERJAYA</h3>
 <p id="pNama"></p>
@@ -113,30 +143,39 @@ let bil=0;
 
 const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
+/* SESSION DATA */
 let data=JSON.parse(sessionStorage.getItem("mds_data")||"{}");
 
-function setStatus(t,m){
-statusBox.className=t;
-statusBox.innerText=m;
+/* 🔥 PAPAR INFO MESYUARAT */
+document.getElementById("mName").innerText = data.mesyuarat || "-";
+document.getElementById("mDate").innerText = data.tarikh || "-";
+
+/* STATUS */
+function setStatus(type,text){
+statusBox.className=type;
+statusBox.innerText=text;
 }
 
+/* TABLE */
 function addRow(res){
+
 bil++;
 
 let tr=document.createElement("tr");
 
 tr.innerHTML=`
 <td>${bil}</td>
-<td>${res.nama}</td>
-<td>${res.jawatan}</td>
-<td>${res.bahagian}</td>
-<td>${res.masa}</td>
-<td>${res.status}</td>
+<td>${res.nama || "-"}</td>
+<td>${res.jawatan || "-"}</td>
+<td>${res.bahagian || "-"}</td>
+<td>${res.masa || "-"}</td>
+<td>${res.status || "Hadir"}</td>
 `;
 
 tbody.prepend(tr);
 }
 
+/* SCANNER */
 function startQR(){
 
 scanner=new Html5Qrcode("reader");
@@ -149,7 +188,7 @@ text=>{
 if(lock) return;
 lock=true;
 
-setStatus("processing","🟡 Proses...");
+setStatus("processing","🟡 Memproses...");
 
 scanner.stop().catch(()=>{});
 
@@ -167,14 +206,15 @@ mesyuarat:data.mesyuarat
 
 beep.play();
 
-pNama.innerHTML=res.nama;
-pJawatan.innerHTML=res.jawatan;
-
+/* POPUP */
+pNama.innerHTML="<b>"+res.nama+"</b>";
+pJawatan.innerHTML="<b>"+res.jawatan+"</b>";
 popup.classList.add("show");
 
+/* TABLE */
 addRow(res);
 
-setStatus("success","🔵 OK");
+setStatus("success","🔵 Berjaya");
 
 setTimeout(()=>{
 popup.classList.remove("show");
