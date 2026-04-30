@@ -4,95 +4,72 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Scanner Kehadiran MDS</title>
 
-<script src="https://unpkg.com/html5-qrcode"></script>
-
 <style>
 body{
   font-family:Arial;
-  background:#022c22;
+  background:linear-gradient(135deg,#064e3b,#022c22);
   color:white;
   text-align:center;
   margin:0;
 }
 
-/* INFO BOX */
-#infoBox{
+/* CARD */
+.box{
   background:white;
   color:black;
-  margin:10px auto;
-  padding:12px;
-  border-radius:10px;
-  width:90%;
-  max-width:400px;
-  text-align:left;
-  font-weight:bold;
-}
-
-/* STATUS */
-#statusBox{
-  width:300px;
-  margin:10px auto;
-  padding:12px;
-  border-radius:10px;
-}
-
-.ready{background:#16a34a;}
-.processing{background:#f59e0b;}
-.success{background:#2563eb;}
-.error{background:#dc2626;}
-
-/* SCANNER */
-#reader{
-  width:320px;
-  margin:auto;
-}
-
-/* TABLE */
-table{
-  width:100%;
-  background:white;
-  color:black;
-  border-collapse:collapse;
-  font-size:13px;
-  margin-top:10px;
-}
-
-th,td{
-  border:1px solid #ddd;
-  padding:6px;
-}
-
-th{
-  background:#16a34a;
-  color:white;
-}
-
-/* POPUP */
-.popup{
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  background:white;
-  color:black;
+  margin:30px auto;
   padding:20px;
-  border-radius:12px;
-  opacity:0;
-  visibility:hidden;
+  border-radius:15px;
+  width:320px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.3);
 }
-.popup.show{
-  opacity:1;
-  visibility:visible;
+
+/* INPUT */
+input{
+  width:90%;
+  padding:12px;
+  margin:10px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+  outline:none;
 }
 
 /* BUTTON */
 button{
-  margin-top:10px;
-  padding:10px;
-  background:red;
-  color:white;
+  padding:12px;
+  width:95%;
   border:none;
   border-radius:8px;
+  background:#16a34a;
+  color:white;
+  cursor:pointer;
+  font-size:14px;
+}
+
+button:hover{
+  background:#12833a;
+}
+
+/* STATUS */
+.status{
+  margin-top:10px;
+  font-weight:bold;
+  min-height:20px;
+}
+
+.success{color:green;}
+.error{color:red;}
+.warning{color:orange;}
+
+/* INFO PANEL */
+.info{
+  font-size:13px;
+  text-align:left;
+  background:#f3f3f3;
+  color:black;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
 }
 </style>
 </head>
@@ -101,140 +78,132 @@ button{
 
 <h2>📷 Scanner Kehadiran MDS</h2>
 
-<!-- 🔥 INFO MESYUARAT -->
-<div id="infoBox">
-📌 Mesyuarat: <span id="mName">-</span><br>
-📅 Tarikh: <span id="mDate">-</span>
+<div class="box">
+
+<!-- INFO MESYUARAT -->
+<div class="info" id="info">
+Loading session...
 </div>
 
-<div id="statusBox" class="ready">🟢 Sedia scan</div>
+<!-- INPUT SCAN -->
+<input id="ic" placeholder="Scan / IC / ID">
 
-<div id="reader"></div>
+<button onclick="scan()">✔ Scan Kehadiran</button>
 
-<!-- TABLE -->
-<table>
-<thead>
-<tr>
-<th>Bil</th>
-<th>Nama</th>
-<th>Jawatan</th>
-<th>Bahagian</th>
-<th>Masa</th>
-<th>Status</th>
-</tr>
-</thead>
-<tbody id="tbody"></tbody>
-</table>
+<div class="status" id="status"></div>
 
-<!-- POPUP -->
-<div id="popup" class="popup">
-<h3>✔ BERJAYA</h3>
-<p id="pNama"></p>
-<p id="pJawatan"></p>
 </div>
 
 <script>
 
-const API="https://script.google.com/macros/s/AKfycbw49s-IeOeoCGju6aZugfqK9kcVzSB0JZS0iYCr7hEmntlIqenw6AVlaz_kh0-R_9eZTg/exec";
+const API = "https://script.google.com/macros/s/AKfycbySRtR_Y4_jsH9d2uXf5qAh4T-EKiiFsnKl6C4ZqGqQp_OO8z5mjR99MWmKwwEhEc-Wyw/exec";
 
-let scanner;
-let lock=false;
-let bil=0;
+/* =========================
+   GET SESSION DATA
+========================= */
+let session = JSON.parse(sessionStorage.getItem("mds_data"));
 
-const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-
-/* SESSION DATA */
-let data=JSON.parse(sessionStorage.getItem("mds_data")||"{}");
-
-/* 🔥 PAPAR INFO MESYUARAT */
-document.getElementById("mName").innerText = data.mesyuarat || "-";
-document.getElementById("mDate").innerText = data.tarikh || "-";
-
-/* STATUS */
-function setStatus(type,text){
-statusBox.className=type;
-statusBox.innerText=text;
+if(!session){
+alert("Tiada session mesyuarat. Sila kembali ke dashboard.");
+window.location.href="dashboard.html";
 }
 
-/* TABLE */
-function addRow(res){
-
-bil++;
-
-let tr=document.createElement("tr");
-
-tr.innerHTML=`
-<td>${bil}</td>
-<td>${res.nama || "-"}</td>
-<td>${res.jawatan || "-"}</td>
-<td>${res.bahagian || "-"}</td>
-<td>${res.masa || "-"}</td>
-<td>${res.status || "Hadir"}</td>
+/* DISPLAY INFO */
+document.getElementById("info").innerHTML = `
+<b>📌 Mesyuarat:</b> ${session.mesyuarat}<br>
+📅 <b>Tarikh:</b> ${session.tarikh}<br>
+⏰ <b>Masa:</b> ${session.mula} - ${session.tamat}<br>
+📍 <b>Tempat:</b> ${session.tempat}
 `;
 
-tbody.prepend(tr);
+/* =========================
+   ANTI DOUBLE SCAN KEY
+========================= */
+function getKey(ic){
+return `mds_${ic}_${session.tarikh}_${session.mesyuarat}`;
 }
 
-/* SCANNER */
-function startQR(){
+function alreadyScanned(ic){
+return localStorage.getItem(getKey(ic)) !== null;
+}
 
-scanner=new Html5Qrcode("reader");
+function markScanned(ic){
+localStorage.setItem(getKey(ic), "1");
+}
 
-scanner.start(
-{facingMode:"environment"},
-{fps:10,qrbox:250},
-text=>{
+/* =========================
+   STATUS DISPLAY
+========================= */
+function showStatus(msg,type){
 
-if(lock) return;
-lock=true;
+let el = document.getElementById("status");
+el.innerText = msg;
+el.className = "status " + type;
 
-setStatus("processing","🟡 Memproses...");
+}
 
-scanner.stop().catch(()=>{});
+/* =========================
+   SCAN FUNCTION
+========================= */
+async function scan(){
 
-fetch(API,{
+let ic = document.getElementById("ic").value.trim();
+
+if(!ic){
+showStatus("Sila scan IC / ID", "error");
+return;
+}
+
+/* CHECK DUPLICATE */
+if(alreadyScanned(ic)){
+showStatus("⚠ Anda sudah scan untuk mesyuarat ini", "warning");
+document.getElementById("ic").value="";
+return;
+}
+
+showStatus("Merekod kehadiran...", "");
+
+try{
+
+let res = await fetch(API,{
 method:"POST",
-headers:{"Content-Type":"text/plain"},
-body:JSON.stringify({
-id:text,
-tarikh:data.tarikh,
-mesyuarat:data.mesyuarat
+headers:{"Content-Type":"application/x-www-form-urlencoded"},
+body:new URLSearchParams({
+action:"scan",
+ic:ic,
+tarikh:session.tarikh,
+mesyuarat:session.mesyuarat,
+masa:new Date().toLocaleTimeString()
 })
-})
-.then(r=>r.json())
-.then(res=>{
-
-beep.play();
-
-/* POPUP */
-pNama.innerHTML="<b>"+res.nama+"</b>";
-pJawatan.innerHTML="<b>"+res.jawatan+"</b>";
-popup.classList.add("show");
-
-/* TABLE */
-addRow(res);
-
-setStatus("success","🔵 Berjaya");
-
-setTimeout(()=>{
-popup.classList.remove("show");
-lock=false;
-setStatus("ready","🟢 Sedia scan");
-startQR();
-},1200);
-
-})
-.catch(()=>{
-setStatus("error","❌ Error API");
-lock=false;
-startQR();
 });
 
-});
+let data = await res.json();
+
+if(data.success){
+
+markScanned(ic);
+
+showStatus("✔ Kehadiran direkodkan", "success");
+
+document.getElementById("ic").value="";
+
+}else{
+showStatus("❌ Gagal rekod kehadiran", "error");
+}
+
+}catch(err){
+console.error(err);
+showStatus("Ralat server", "error");
+}
 
 }
 
-startQR();
+/* ENTER KEY SUPPORT */
+document.addEventListener("keydown", function(e){
+if(e.key === "Enter"){
+scan();
+}
+});
 
 </script>
 
