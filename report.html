@@ -36,6 +36,7 @@ button{
   border-radius:8px;
   background:#3498db;
   color:white;
+  cursor:pointer;
 }
 
 table{
@@ -56,6 +57,7 @@ th{
   background:#f2f2f2;
 }
 
+/* POPUP */
 .popup{
   position:fixed;
   top:50%;
@@ -67,13 +69,15 @@ th{
   width:320px;
   border-radius:10px;
   display:none;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
 }
 
 .popup button{
   width:100%;
-  margin-top:5px;
+  margin-top:8px;
 }
 
+/* PRINT */
 @media print{
   button,.popup{
     display:none !important;
@@ -92,23 +96,25 @@ th{
 <h2>📄 Laporan Kehadiran MDS</h2>
 
 <div class="box">
-<label>Tarikh:</label>
-<input type="date" id="tarikh">
+
+<label>Tarikh:</label><br>
+<input type="date" id="tarikh"><br>
 
 <button onclick="loadMesyuarat()">🔍 Cari Report</button>
 <button onclick="window.print()">🖨️ Print PDF</button>
+
 </div>
 
-<!-- POPUP MESYUARAT -->
+<!-- POPUP -->
 <div id="popup" class="popup">
-<h3>Pilih Mesyuarat</h3>
+<h3>📌 Pilih Mesyuarat</h3>
 <div id="list"></div>
 <button onclick="closePopup()">Tutup</button>
 </div>
 
 <!-- TABLE -->
 <div class="box">
-<table id="table">
+<table>
 <thead>
 <tr>
 <th>Bil</th>
@@ -117,16 +123,21 @@ th{
 <th>Masa</th>
 </tr>
 </thead>
-<tbody></tbody>
+<tbody id="tbody"></tbody>
 </table>
 </div>
 
 <script>
 
-const API="https://script.google.com/macros/s/AKfycbwY6AswdEMwOU2w43fJour9UzZ02Q6-AccmVlnl9zoVnoGIcho-ZgOe8-2cy5Zx0Kl9NA/exec";
+const API="https://script.google.com/macros/s/AKfycbzgJOMgM_bNE2r_GZlHVL4s8pdaCWLAUs3ZcpU2RVHSbq44QwsJkuP9DT3QoDejkb2UHA/exec";
 
-/* LOAD MESYUARAT DARI SHEET */
+/* LOAD LIST MESYUARAT */
 function loadMesyuarat(){
+
+if(!tarikh.value){
+alert("Sila pilih tarikh");
+return;
+}
 
 fetch(API,{
 method:"POST",
@@ -142,20 +153,33 @@ tarikh:tarikh.value
 let list=document.getElementById("list");
 list.innerHTML="";
 
+if(!data || data.length===0){
+list.innerHTML="<p>Tiada mesyuarat</p>";
+popup.style.display="block";
+return;
+}
+
 data.forEach(m=>{
 let btn=document.createElement("button");
+btn.style.width="100%";
+btn.style.margin="5px 0";
 btn.innerText=m;
+
 btn.onclick=()=>loadReport(m);
+
 list.appendChild(btn);
 });
 
 popup.style.display="block";
 
+})
+.catch(()=>{
+alert("Ralat load mesyuarat");
 });
 
 }
 
-/* LOAD REPORT DARI SHEET */
+/* LOAD REPORT */
 function loadReport(mesyuarat){
 
 popup.style.display="none";
@@ -172,11 +196,11 @@ mesyuarat:mesyuarat
 .then(r=>r.json())
 .then(data=>{
 
-let tbody=document.querySelector("#table tbody");
+let tbody=document.getElementById("tbody");
 tbody.innerHTML="";
 
 if(!data || data.length===0){
-tbody.innerHTML="<tr><td colspan='4'>Tiada data</td></tr>";
+tbody.innerHTML="<tr><td colspan='4'>Tiada data kehadiran</td></tr>";
 return;
 }
 
@@ -185,18 +209,22 @@ data.forEach((r,i)=>{
 tbody.innerHTML += `
 <tr>
 <td>${i+1}</td>
-<td>${r.nama}</td>
-<td>${r.jawatan}</td>
-<td>${r.masa}</td>
+<td>${r.nama || "-"}</td>
+<td>${r.jawatan || "-"}</td>
+<td>${r.masa || "-"}</td>
 </tr>
 `;
 
 });
 
+})
+.catch(()=>{
+alert("Ralat load report");
 });
 
 }
 
+/* CLOSE POPUP */
 function closePopup(){
 popup.style.display="none";
 }
