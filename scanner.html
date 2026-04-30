@@ -12,13 +12,29 @@ body{
   background:#022c22;
   color:white;
   text-align:center;
+  margin:0;
 }
 
+/* INFO BOX */
+.info{
+  background:white;
+  color:black;
+  margin:10px auto;
+  padding:12px;
+  width:340px;
+  border-radius:12px;
+  font-size:13px;
+  text-align:left;
+  line-height:1.6;
+}
+
+/* SCANNER */
 #reader{
   width:320px;
-  margin:15px auto;
+  margin:10px auto;
 }
 
+/* STATUS */
 #statusBox{
   width:300px;
   margin:10px auto;
@@ -32,6 +48,7 @@ body{
 .success{background:#2563eb;}
 .error{background:#dc2626;}
 
+/* TABLE */
 .table-box{
   margin:15px;
   overflow-x:auto;
@@ -55,9 +72,7 @@ th{
   color:white;
 }
 
-.status-Hadir{color:green;font-weight:bold;}
-.status-Duplicate{color:red;font-weight:bold;}
-
+/* POPUP */
 .popup{
   position:fixed;
   top:50%;left:50%;
@@ -89,6 +104,11 @@ button{
 
 <h2>📷 Scanner Kehadiran MDS</h2>
 
+<!-- 🔥 INFO MESYUARAT -->
+<div class="info" id="infoBox">
+Loading info mesyuarat...
+</div>
+
 <div id="statusBox" class="ready">🟢 Sedia scan</div>
 
 <div id="reader"></div>
@@ -118,83 +138,150 @@ button{
 
 <script>
 
-const API="https://script.google.com/macros/s/AKfycbySRtR_Y4_jsH9d2uXf5qAh4T-EKiiFsnKl6C4ZqGqQp_OO8z5mjR99MWmKwwEhEc-Wyw/exec";
+const API="https://script.google.com/macros/s/AKfycbzgJOMgM_bNE2r_GZlHVL4s8pdaCWLAUs3ZcpU2RVHSbq44QwsJkuP9DT3QoDejkb2UHA/exec";
 
-let data=JSON.parse(sessionStorage.getItem("mds_data")||"{}");
-let scanner,lock=false;
-const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+let data = JSON.parse(sessionStorage.getItem("mds_data") || "{}");
 
-function setStatus(t,m){
-statusBox.className=t;
-statusBox.innerText=m;
+let scanner;
+let lock = false;
+
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+
+const statusBox = document.getElementById("statusBox");
+const tbody = document.getElementById("tbody");
+const popup = document.getElementById("popup");
+const pNama = document.getElementById("pNama");
+const pJawatan = document.getElementById("pJawatan");
+const infoBox = document.getElementById("infoBox");
+
+/* =========================
+   CHECK SESSION
+========================= */
+if(!data.mesyuarat){
+alert("Tiada data mesyuarat");
+window.location.href="dashboard.html";
 }
 
-function addRow(res){
-let tr=document.createElement("tr");
+/* =========================
+   DISPLAY INFO MESYUARAT
+========================= */
+infoBox.innerHTML = `
+<b>📌 Nama Mesyuarat:</b> ${data.mesyuarat}<br>
+📅 <b>Tarikh:</b> ${data.tarikh}<br>
+⏰ <b>Masa:</b> ${data.mula} - ${data.tamat}<br>
+📍 <b>Tempat:</b> ${data.tempat}
+`;
 
-tr.innerHTML=`
+/* =========================
+   ANTI DOUBLE SCAN
+========================= */
+function scanKey(id){
+return `mds_${id}_${data.tarikh}_${data.mesyuarat}`;
+}
+
+function alreadyScanned(id){
+return localStorage.getItem(scanKey(id)) !== null;
+}
+
+function markScanned(id){
+localStorage.setItem(scanKey(id),"1");
+}
+
+/* =========================
+   STATUS
+========================= */
+function setStatus(type,msg){
+statusBox.className = type;
+statusBox.innerText = msg;
+}
+
+/* =========================
+   TABLE
+========================= */
+function addRow(res){
+
+let tr = document.createElement("tr");
+
+tr.innerHTML = `
 <td>${res.nama}</td>
 <td>${res.jawatan}</td>
 <td>${res.bahagian || "-"}</td>
 <td>${res.masa}</td>
-<td class="status-${res.status}">${res.status}</td>
+<td>${res.status}</td>
 `;
 
 tbody.prepend(tr);
+
 }
 
+/* =========================
+   QR SCANNER
+========================= */
 function startQR(){
 
-scanner=new Html5Qrcode("reader");
+scanner = new Html5Qrcode("reader");
 
-scanner.start({facingMode:"environment"},{fps:10,qrbox:250},text=>{
+scanner.start(
+  { facingMode:"environment" },
+  { fps:10, qrbox:250 },
+  text => {
 
-if(lock) return;
-lock=true;
+    if(lock) return;
+    lock = true;
 
-setStatus("processing","🟡 Proses...");
+    setStatus("processing","🟡 Memproses...");
 
-scanner.stop().catch(()=>{});
+    scanner.stop().catch(()=>{});
 
-fetch(API,{
-method:"POST",
-body:JSON.stringify({
-nama:text,
-jawatan:"-",
-bahagian:"-",
-tarikh:data.tarikh,
-mesyuarat:data.mesyuarat
-})
-})
-.then(r=>r.json())
-.then(res=>{
+    if(alreadyScanned(text)){
+      setStatus("error","⚠ Sudah scan mesyuarat ini");
+      lock=false;
+      startQR();
+      return;
+    }
 
-beep.play();
+    fetch(API,{
+      method:"POST",
+      body:JSON.stringify({
+        nama:text,
+        jawatan:"-",
+        bahagian:"-",
+        tarikh:data.tarikh,
+        mesyuarat:data.mesyuarat
+      })
+    })
+    .then(r=>r.json())
+    .then(res=>{
 
-pNama.innerHTML=res.nama;
-pJawatan.innerHTML=res.jawatan;
+      markScanned(text);
 
-popup.classList.add("show");
+      beep.play();
 
-addRow(res);
+      pNama.innerText = res.nama;
+      pJawatan.innerText = res.jawatan;
 
-setStatus("success","🔵 OK");
+      popup.classList.add("show");
 
-setTimeout(()=>{
-popup.classList.remove("show");
-lock=false;
-setStatus("ready","🟢 Sedia scan");
-startQR();
-},1200);
+      addRow(res);
 
-})
-.catch(()=>{
-setStatus("error","❌ Error");
-lock=false;
-startQR();
-});
+      setStatus("success","✔ Berjaya");
 
-});
+      setTimeout(()=>{
+        popup.classList.remove("show");
+        lock=false;
+        setStatus("ready","🟢 Sedia scan");
+        startQR();
+      },1200);
+
+    })
+    .catch(()=>{
+      setStatus("error","❌ Error server");
+      lock=false;
+      startQR();
+    });
+
+  }
+);
 
 }
 
