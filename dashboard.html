@@ -2,256 +2,73 @@
 <html lang="ms">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dashboard Kehadiran MDS</title>
+<title>Dashboard MDS</title>
 
 <style>
 body{
   font-family:Arial;
-  margin:0;
-  min-height:100vh;
   background:linear-gradient(135deg,#064e3b,#022c22);
   color:white;
-}
-
-/* HEADER */
-.header{
-  padding:15px;
   text-align:center;
-  font-size:20px;
-  font-weight:bold;
 }
 
-/* CARD */
-.card{
+.box{
   background:white;
   color:black;
-  margin:15px;
-  padding:18px;
-  border-radius:14px;
+  margin:20px;
+  padding:20px;
+  border-radius:12px;
 }
 
-/* INPUT */
-label{
-  font-size:13px;
-  font-weight:bold;
-}
 input,select{
-  width:100%;
+  width:90%;
   padding:10px;
-  margin:6px 0 12px 0;
-  border-radius:8px;
-  border:1px solid #ccc;
+  margin:8px;
 }
 
-/* BUTTON */
 button{
-  width:100%;
-  padding:13px;
-  border:none;
-  border-radius:10px;
-  margin-top:10px;
-  font-size:15px;
-  cursor:pointer;
-}
-.btn-start{background:#16a34a;color:white;}
-.btn-start:hover{background:#15803d;}
-.btn-logout{background:#dc2626;color:white;}
-.btn-logout:hover{background:#b91c1c;}
-
-/* PREVIEW */
-.preview{
-  background:#ecfdf5;
-  border:1px solid #10b981;
   padding:10px;
-  border-radius:10px;
-  font-size:13px;
-}
-
-/* HIDE */
-#bilBox,#programBox,#taklimatBox,#tempatLainBox{
-  display:none;
+  width:95%;
+  background:#16a34a;
+  color:white;
+  border:none;
+  border-radius:8px;
 }
 </style>
 </head>
 
 <body>
 
-<script>
-if(sessionStorage.getItem("mds_login")!=="true"){
-  window.location.href="login.html";
-}
-</script>
+<h2>🏢 Dashboard MDS</h2>
 
-<div class="header">🏢 Dashboard Kehadiran MDS</div>
+<div class="box">
 
-<div class="card">
+<label>Tarikh</label><br>
+<input type="date" id="tarikh"><br>
 
-<label>Jenis Mesyuarat / Program</label>
-<select id="jenisMesyuarat" onchange="toggleOptions();previewData();">
-<option value="">-- Pilih --</option>
+<label>Mesyuarat</label><br>
+<input type="text" id="mesyuarat" placeholder="Nama mesyuarat"><br>
 
-<option value="Jawatankuasa Kewangan" data-bil="1">Jawatankuasa Kewangan</option>
-<option value="Jawatankuasa Perlesenan" data-bil="1">Jawatankuasa Perlesenan</option>
-<option value="Jawatankuasa Pengurusan" data-bil="1">Jawatankuasa Pengurusan</option>
-
-<option value="Perhimpunan Bulanan Staf" data-bil="0">Perhimpunan Bulanan Staf</option>
-<option value="Taklimat Khas" data-bil="0">Taklimat Khas</option>
-<option value="Program Komuniti" data-bil="0">Program Komuniti</option>
-</select>
-
-<div id="programBox">
-<label>Nama Program</label>
-<input id="namaProgram" oninput="previewData()">
-</div>
-
-<div id="taklimatBox">
-<label>Nama Taklimat</label>
-<input id="namaTaklimat" oninput="previewData()">
-</div>
-
-<div id="bilBox">
-<label>Bilangan Mesyuarat</label>
-<select id="bilMesyuarat" onchange="previewData()">
-<option>Bil.1/2026</option>
-<option>Bil.2/2026</option>
-<option>Bil.3/2026</option>
-<option>Bil.4/2026</option>
-</select>
-</div>
-
-<label>Tarikh</label>
-<input type="date" id="tarikh" onchange="previewData()">
-
-<label>Masa Mula</label>
-<select id="masaMula">
-<option value="">-- Pilih --</option>
-<option value="08:00">0800</option>
-<option value="09:00">0900</option>
-<option value="10:00">1000</option>
-<option value="11:00">1100</option>
-<option value="12:00">1200</option>
-<option value="13:00">1300</option>
-<option value="14:00">1400</option>
-<option value="15:00">1500</option>
-<option value="16:00">1600</option>
-<option value="17:00">1700</option>
-</select>
-
-<label>Masa Tamat</label>
-<select id="masaTamat"></select>
-
-<label>Tempat</label>
-<select id="tempat" onchange="toggleTempat();previewData();">
-<option>Bilik Mesyuarat Utama</option>
-<option>Bilik Jawatankuasa</option>
-<option value="lain">Lain-lain</option>
-</select>
-
-<input id="tempatLainBox" placeholder="Lokasi lain" oninput="previewData()">
-
-<!-- PREVIEW -->
-<div class="preview" id="previewBox">
-Maklumat belum lengkap
-</div>
-
-<button class="btn-start" onclick="goScanner()">➡️ Mula Scan Kehadiran</button>
-<button class="btn-logout" onclick="logout()">Logout</button>
+<button onclick="start()">🚀 Mula Scanner</button>
 
 </div>
 
 <script>
 
-/* AUTO TAMAT */
-masaMula.addEventListener("change",()=>{
-if(!masaMula.value) return;
+function start(){
 
-let [h,m]=masaMula.value.split(":");
-let d=new Date();
-d.setHours(h);
-d.setMinutes(m);
-d.setHours(d.getHours()+1);
-
-let end=
-String(d.getHours()).padStart(2,"0")+":"+
-String(d.getMinutes()).padStart(2,"0");
-
-masaTamat.innerHTML=`<option value="${end}">${end}</option>`;
-
-previewData();
-});
-
-/* TOGGLE */
-function toggleOptions(){
-let s=jenisMesyuarat.options[jenisMesyuarat.selectedIndex];
-
-bilBox.style.display=s.getAttribute("data-bil")==="1"?"block":"none";
-programBox.style.display=jenisMesyuarat.value==="Program Komuniti"?"block":"block"==="none"?"none":"block";
-taklimatBox.style.display=jenisMesyuarat.value==="Taklimat Khas"?"block":"none";
-}
-
-function toggleTempat(){
-tempatLainBox.style.display=tempat.value==="lain"?"block":"none";
-}
-
-/* GET FULL NAME */
-function getMesyuarat(){
-let j=jenisMesyuarat.value;
-
-if(j==="Program Komuniti") return j+" - "+namaProgram.value;
-if(j==="Taklimat Khas") return j+" - "+namaTaklimat.value;
-
-let s=jenisMesyuarat.options[jenisMesyuarat.selectedIndex];
-return s.getAttribute("data-bil")==="1"
-? j+" "+bilMesyuarat.value : j;
-}
-
-/* PREVIEW */
-function previewData(){
-
-if(!jenisMesyuarat.value){
-previewBox.innerHTML="Maklumat belum lengkap";
-return;
-}
-
-previewBox.innerHTML=`
-<b>Mesyuarat:</b> ${getMesyuarat()}<br>
-<b>Tarikh:</b> ${tarikh.value || "-"}<br>
-<b>Masa:</b> ${masaMula.value || "-"} - ${masaTamat.value || "-"}<br>
-<b>Tempat:</b> ${tempat.value==="lain"?tempatLainBox.value:tempat.value}
-`;
-}
-
-/* VALIDATION */
-function validate(){
-if(!jenisMesyuarat.value) return "Sila pilih mesyuarat";
-if(!tarikh.value) return "Sila pilih tarikh";
-if(!masaMula.value) return "Sila pilih masa mula";
-return "";
-}
-
-/* GO SCANNER */
-function goScanner(){
-
-let err=validate();
-if(err){
-alert(err);
+if(!tarikh.value || !mesyuarat.value){
+alert("Isi lengkap");
 return;
 }
 
 sessionStorage.setItem("mds_data", JSON.stringify({
-mesyuarat:getMesyuarat(),
-tarikh:tarikh.value,
-masa:masaMula.value+" - "+masaTamat.value,
-tempat:tempat.value==="lain"?tempatLainBox.value:tempat.value
+tarikh: tarikh.value,
+mesyuarat: mesyuarat.value
 }));
 
 window.location.href="scanner.html";
-}
 
-/* LOGOUT */
-function logout(){
-sessionStorage.removeItem("mds_login");
-window.location.href="login.html";
 }
 
 </script>
