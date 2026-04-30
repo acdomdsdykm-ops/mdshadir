@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QR Staf MDS</title>
+
+<style>
+
+body{
+  font-family:Arial;
+  margin:0;
+  min-height:100vh;
+  background:linear-gradient(135deg,#022c22,#064e3b);
+  color:white;
+  text-align:center;
+}
+
+/* HEADER */
+h2{
+  margin-top:20px;
+  font-weight:bold;
+}
+
+/* CARD */
+.card{
+  background:white;
+  color:black;
+  width:340px;
+  margin:30px auto;
+  padding:20px;
+  border-radius:15px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
+
+/* INPUT */
+input,button{
+  width:90%;
+  padding:12px;
+  margin:8px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-size:14px;
+}
+
+button{
+  background:linear-gradient(135deg,#047857,#10b981);
+  color:white;
+  border:none;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+button:hover{
+  background:linear-gradient(135deg,#065f46,#059669);
+}
+
+/* ERROR */
+#error{
+  color:red;
+  font-weight:bold;
+}
+
+/* PROFILE */
+#profile{
+  display:none;
+}
+
+/* ID CARD */
+.id-card{
+  background:linear-gradient(145deg,#013220,#025e3a,#046c4e);
+  color:white;
+  border-radius:22px;
+  padding:25px;
+  width:320px;
+  margin:auto;
+  box-shadow:0 18px 40px rgba(0,0,0,0.45);
+  position:relative;
+  overflow:hidden;
+}
+
+/* decorative glow */
+.id-card::before{
+  content:"";
+  position:absolute;
+  top:-60px;
+  right:-60px;
+  width:180px;
+  height:180px;
+  background:rgba(255,255,255,0.08);
+  border-radius:50%;
+}
+
+.id-card::after{
+  content:"";
+  position:absolute;
+  bottom:-70px;
+  left:-70px;
+  width:200px;
+  height:200px;
+  background:rgba(255,215,0,0.08);
+  border-radius:50%;
+}
+
+/* LOGO */
+.logo{
+  width:75px;
+  margin-bottom:5px;
+}
+
+/* MAJLIS TEXT */
+.majlis{
+  font-size:12px;
+  font-weight:bold;
+  letter-spacing:1px;
+  margin-top:5px;
+  color:#f1f5f9;
+}
+
+.subtext{
+  font-size:10px;
+  opacity:0.85;
+  margin-bottom:10px;
+  color:#d1fae5;
+}
+
+/* NAME BOX */
+.name-box{
+  background:rgba(255,255,255,0.95);
+  color:#0f172a;
+  padding:12px;
+  border-radius:12px;
+  margin:12px 0;
+  font-weight:bold;
+  font-size:16px;
+}
+
+/* BOLD INFO */
+.bold{
+  font-weight:700;
+  color:#e5e7eb;
+}
+
+/* QR BOX */
+.qr-box{
+  background:white;
+  padding:14px;
+  border-radius:16px;
+  margin-top:15px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  box-shadow:0 10px 25px rgba(0,0,0,0.25);
+}
+
+.qr-box img{
+  width:180px;
+  height:180px;
+}
+
+/* LOADING */
+.loading{
+  position:fixed;
+  top:0;left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.6);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  z-index:9999;
+}
+
+.spinner{
+  width:50px;
+  height:50px;
+  border:5px solid #ccc;
+  border-top:5px solid #10b981;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  margin-bottom:10px;
+}
+
+@keyframes spin{
+  0%{transform:rotate(0deg);}
+  100%{transform:rotate(360deg);}
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>👤 QR Kehadiran Staf MDS</h2>
+
+<!-- LOADING -->
+<div id="loading" class="loading">
+  <div class="spinner"></div>
+  <p>Sedang semak maklumat...</p>
+</div>
+
+<!-- SEARCH -->
+<div class="card" id="searchBox">
+
+  <input id="icInput" placeholder="Masukkan 4 digit terakhir IC">
+
+  <button onclick="searchIC()">Semak</button>
+
+  <p id="error"></p>
+
+</div>
+
+<!-- PROFILE -->
+<div id="profile">
+
+  <div class="id-card">
+
+    <!-- LOGO -->
+    <img src="mds.png" class="logo">
+
+    <div class="majlis">MAJLIS DAERAH SIMUNJAN</div>
+    <div class="subtext">Sistem Kehadiran Digital MDS</div>
+
+    <!-- NAME -->
+    <div class="name-box" id="nama">NAMA STAF</div>
+
+    <!-- INFO -->
+    <p class="bold" id="jawatan">JAWATAN</p>
+    <p class="bold" id="bahagian">BAHAGIAN</p>
+
+    <!-- QR -->
+    <div class="qr-box">
+      <div id="qrcode"></div>
+    </div>
+
+    <p style="font-size:15px;margin-top:14px;font-weight:bold;line-height:1.4;">
+  Sila tunjukkan QRCode ini kepada Urusetia untuk tujuan rekod kehadiran.<br>
+  Terima kasih.
+</p>
+
+  </div>
+
+  <div class="card">
+    <button onclick="resetPage()">🔄 Cari Semula</button>
+  </div>
+
+</div>
+
+<script>
+
+const API = "https://script.google.com/macros/s/AKfycbxi6lk4tgJeEP_TVKcgPQraY1sasPpVUml4Oa-LfcVEohLPKNZN-c10sTIJiqTnvkkYeA/exec";
+
+/* LOADING */
+function showLoading(){
+  document.getElementById("loading").style.display="flex";
+}
+function hideLoading(){
+  document.getElementById("loading").style.display="none";
+}
+
+/* RESET */
+function resetPage(){
+  document.getElementById("icInput").value="";
+  document.getElementById("error").innerText="";
+
+  document.getElementById("searchBox").style.display="block";
+  document.getElementById("profile").style.display="none";
+
+  document.getElementById("qrcode").innerHTML="";
+}
+
+/* SEARCH */
+function searchIC(){
+
+  const ic = document.getElementById("icInput").value.trim();
+  const error = document.getElementById("error");
+
+  if(!ic){
+    error.innerText="IC kosong";
+    return;
+  }
+
+  if(ic.length !== 4){
+    error.innerText="Masukkan 4 digit IC";
+    return;
+  }
+
+  showLoading();
+
+  fetch(API + "?action=searchNama&ic=" + encodeURIComponent(ic))
+  .then(r=>r.json())
+  .then(res=>{
+
+    hideLoading();
+
+    if(!res || !res.success){
+      error.innerText = res?.message || "Maklumat tidak sah";
+      return;
+    }
+
+    document.getElementById("nama").innerText = res.nama;
+    document.getElementById("jawatan").innerText = res.jawatan;
+    document.getElementById("bahagian").innerText = res.bahagian;
+
+    document.getElementById("qrcode").innerHTML =
+      `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(res.id)}">`;
+
+    document.getElementById("searchBox").style.display="none";
+    document.getElementById("profile").style.display="block";
+
+  })
+  .catch(err=>{
+    hideLoading();
+    error.innerText="Server error / CORS";
+    console.log(err);
+  });
+}
+
+</script>
+
+</body>
+</html>
