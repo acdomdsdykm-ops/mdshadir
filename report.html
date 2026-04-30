@@ -2,14 +2,13 @@
 <html lang="ms">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MDS Laporan Kehadiran</title>
+<title>MDS Report System</title>
 
 <style>
 body{
   font-family:Arial;
   margin:0;
   padding:20px;
-  min-height:100vh;
   background:linear-gradient(135deg,#064e3b,#022c22);
   color:white;
   text-align:center;
@@ -25,7 +24,6 @@ body{
 
 input{
   padding:10px;
-  margin:8px;
   border-radius:8px;
   border:1px solid #ccc;
 }
@@ -37,7 +35,7 @@ button{
   background:#3498db;
   color:white;
   cursor:pointer;
-  margin:3px;
+  margin:5px;
 }
 
 table{
@@ -58,10 +56,9 @@ th{
   background:#f2f2f2;
 }
 
-/* INFO */
-.infoBox{
-  background:#fff;
-  color:#000;
+.info{
+  background:white;
+  color:black;
   padding:10px;
   border-radius:10px;
   margin:10px;
@@ -80,7 +77,6 @@ th{
   width:320px;
   border-radius:10px;
   display:none;
-  box-shadow:0 10px 30px rgba(0,0,0,0.3);
   z-index:999;
 }
 
@@ -94,39 +90,32 @@ th{
   button,.popup{
     display:none !important;
   }
-  body{
-    background:white;
-    color:black;
-  }
 }
 </style>
 </head>
 
 <body>
 
-<h2>📄 Laporan Kehadiran MDS</h2>
+<h2>📄 MDS Report System</h2>
 
 <div class="box">
-
 <label>Tarikh:</label><br>
-<input type="date" id="tarikh"><br>
+<input type="date" id="tarikh"><br><br>
 
 <button onclick="loadMesyuarat()">🔍 Cari Report</button>
-<button onclick="window.print()">🖨️ Print PDF</button>
-
+<button onclick="window.print()">🖨️ Print</button>
 </div>
 
-<!-- INFO -->
-<div class="infoBox">
-📌 Mesyuarat: <span id="namaMesyuarat">-</span><br>
-📅 Tarikh: <span id="infoTarikh">-</span>
+<div class="info">
+📌 Mesyuarat: <span id="mesyuarat">-</span><br>
+📅 Tarikh: <span id="tarikhInfo">-</span>
 </div>
 
 <!-- POPUP -->
 <div id="popup" class="popup">
-<h3>📌 Pilih Mesyuarat</h3>
+<h3>Pilih Mesyuarat</h3>
 <div id="list"></div>
-<button onclick="closePopup()">Tutup</button>
+<button onclick="popup.style.display='none'">Tutup</button>
 </div>
 
 <!-- TABLE -->
@@ -149,7 +138,7 @@ th{
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbxU4E2VRbmRLoV5ipyGIUULA9z8conSE-u7WksOCPrup501XLeWzQEKoLDu8F0G3h2OiA/exec";
+const API = "https://script.google.com/macros/s/AKfycbxdga9cLtoJvhfWJO60rpSoL9tnBAjbBRCtiewgdYb05_tacQ_z4R27-OxFaX5DfOHTjg/exec";
 
 const popup = document.getElementById("popup");
 const tarikhEl = document.getElementById("tarikh");
@@ -164,32 +153,26 @@ alert("Sila pilih tarikh");
 return;
 }
 
-document.getElementById("infoTarikh").innerText = tarikhEl.value;
+document.getElementById("tarikhInfo").innerText = tarikhEl.value;
 
 fetch(API,{
 method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
+headers:{
+"Content-Type":"application/x-www-form-urlencoded"
+},
+body:new URLSearchParams({
 action:"listMesyuarat",
 tarikh:tarikhEl.value
 })
 })
-.then(r=>r.text())
-.then(text=>{
-
-let data;
-try {
-data = JSON.parse(text);
-} catch(e){
-alert("API tidak valid JSON");
-return;
-}
+.then(r=>r.json())
+.then(data=>{
 
 let list=document.getElementById("list");
 list.innerHTML="";
 
 if(!data || data.length===0){
-list.innerHTML="<p>Tiada mesyuarat</p>";
+list.innerHTML="Tiada mesyuarat";
 popup.style.display="block";
 return;
 }
@@ -204,11 +187,7 @@ list.appendChild(btn);
 popup.style.display="block";
 
 })
-.catch(err=>{
-console.error(err);
-alert("Ralat load mesyuarat");
-});
-
+.catch(()=>alert("Ralat load mesyuarat"));
 }
 
 /* =========================
@@ -218,27 +197,21 @@ function loadReport(mesyuarat){
 
 popup.style.display="none";
 
-document.getElementById("namaMesyuarat").innerText = mesyuarat;
+document.getElementById("mesyuarat").innerText = mesyuarat;
 
 fetch(API,{
 method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
+headers:{
+"Content-Type":"application/x-www-form-urlencoded"
+},
+body:new URLSearchParams({
 action:"report",
 tarikh:tarikhEl.value,
 mesyuarat:mesyuarat
 })
 })
-.then(r=>r.text())
-.then(text=>{
-
-let data;
-try {
-data = JSON.parse(text);
-} catch(e){
-alert("Report API error");
-return;
-}
+.then(r=>r.json())
+.then(data=>{
 
 let tbody=document.getElementById("tbody");
 tbody.innerHTML="";
@@ -252,29 +225,18 @@ data.forEach((r,i)=>{
 tbody.innerHTML += `
 <tr>
 <td>${i+1}</td>
-<td>${r.nama || "-"}</td>
-<td>${r.jawatan || "-"}</td>
-<td>${r.bahagian || "-"}</td>
-<td>${r.tarikh || "-"}</td>
-<td>${r.masa || "-"}</td>
-<td>${r.status || "-"}</td>
+<td>${r.nama}</td>
+<td>${r.jawatan}</td>
+<td>${r.bahagian}</td>
+<td>${r.tarikh}</td>
+<td>${r.masa}</td>
+<td>${r.status}</td>
 </tr>
 `;
 });
 
-})
-.catch(err=>{
-console.error(err);
-alert("Ralat load report");
 });
 
-}
-
-/* =========================
-   CLOSE POPUP
-========================= */
-function closePopup(){
-popup.style.display="none";
 }
 
 </script>
