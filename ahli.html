@@ -2,7 +2,7 @@
 <html lang="ms">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>QR Staf MDS</title>
+<title>QR Staf MDS Premium</title>
 
 <style>
 
@@ -10,95 +10,71 @@ body{
   font-family:Arial;
   margin:0;
   min-height:100vh;
-  background:linear-gradient(135deg,#022c22,#064e3b);
-  color:white;
-  text-align:center;
+  background:linear-gradient(135deg,#064e3b,#022c22);
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
-/* HEADER */
-h2{
-  margin-top:20px;
-  font-weight:bold;
-}
-
-/* CARD */
+/* ================= MAIN CARD ================= */
 .card{
-  background:white;
-  color:black;
-  width:340px;
-  margin:30px auto;
-  padding:20px;
-  border-radius:15px;
-  box-shadow:0 10px 25px rgba(0,0,0,0.3);
-}
+  width:360px;
 
-/* INPUT */
-input,button{
-  width:90%;
-  padding:12px;
-  margin:8px 0;
-  border-radius:8px;
-  border:1px solid #ccc;
-  font-size:14px;
-}
+  background:rgba(255,255,255,0.10);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
 
-button{
-  background:linear-gradient(135deg,#047857,#10b981);
-  color:white;
-  border:none;
-  cursor:pointer;
-  font-weight:bold;
-}
-
-button:hover{
-  background:linear-gradient(135deg,#065f46,#059669);
-}
-
-/* ERROR */
-#error{
-  color:red;
-  font-weight:bold;
-}
-
-/* PROFILE */
-#profile{
-  display:none;
-}
-
-/* ID CARD */
-.id-card{
-  background:linear-gradient(145deg,#013220,#025e3a,#046c4e);
-  color:white;
+  border:1px solid rgba(255,255,255,0.18);
   border-radius:22px;
-  padding:25px;
-  width:320px;
-  margin:auto;
-  box-shadow:0 18px 40px rgba(0,0,0,0.45);
+
+  padding:20px;
+  text-align:center;
+  color:white;
+
   position:relative;
   overflow:hidden;
+
+  box-shadow:0 30px 70px rgba(0,0,0,0.45);
 }
 
-/* decorative glow */
-.id-card::before{
+/* OUTER WATERMARK */
+.card::before{
   content:"";
   position:absolute;
-  top:-60px;
-  right:-60px;
-  width:180px;
-  height:180px;
-  background:rgba(255,255,255,0.08);
-  border-radius:50%;
+
+  width:280px;
+  height:280px;
+
+  background:url('mds.png') no-repeat center;
+  background-size:contain;
+
+  opacity:0.06;
+  filter:grayscale(100%);
+
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+
+  pointer-events:none; /* 🔥 FIX CLICK BLOCK */
 }
 
-.id-card::after{
+/* GLOW */
+.card::after{
   content:"";
   position:absolute;
-  bottom:-70px;
-  left:-70px;
-  width:200px;
-  height:200px;
-  background:rgba(255,215,0,0.08);
+  width:320px;
+  height:320px;
+
+  background:radial-gradient(circle,
+    rgba(16,185,129,0.25),
+    transparent 70%
+  );
+
+  top:-100px;
+  left:-100px;
   border-radius:50%;
+
+  pointer-events:none; /* 🔥 FIX CLICK BLOCK */
 }
 
 /* LOGO */
@@ -107,54 +83,161 @@ button:hover{
   margin-bottom:5px;
 }
 
-/* MAJLIS TEXT */
-.majlis{
-  font-size:12px;
-  font-weight:bold;
-  letter-spacing:1px;
-  margin-top:5px;
-  color:#f1f5f9;
+/* AGENCY */
+.agency{
+  font-size:15px;
+  font-weight:800;
 }
 
-.subtext{
-  font-size:10px;
+/* ADDRESS */
+.address{
+  font-size:11px;
   opacity:0.85;
-  margin-bottom:10px;
-  color:#d1fae5;
+  line-height:1.4;
 }
 
-/* NAME BOX */
-.name-box{
-  background:rgba(255,255,255,0.95);
-  color:#0f172a;
+/* LABEL */
+.qr-label{
+  margin-top:12px;
+  display:inline-block;
+
+  padding:10px 18px;
+  font-size:14px;
+  font-weight:900;
+
+  color:#064e3b;
+
+  background:linear-gradient(135deg,#ffffff,#eafff5);
+  border:2px solid #10b981;
+  border-radius:14px;
+}
+
+/* INPUT */
+input{
+  width:92%;
   padding:12px;
-  border-radius:12px;
-  margin:12px 0;
+  border:none;
+  border-radius:10px;
+  margin:10px 0;
+  outline:none;
+}
+
+/* BUTTON */
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:10px;
   font-weight:bold;
-  font-size:16px;
+  cursor:pointer;
+  transition:0.2s ease;
 }
 
-/* BOLD INFO */
-.bold{
-  font-weight:700;
-  color:#e5e7eb;
+button:hover{
+  transform:scale(1.02);
 }
 
-/* QR BOX */
-.qr-box{
-  background:white;
-  padding:14px;
-  border-radius:16px;
+.search-btn{
+  background:#10b981;
+  color:white;
+}
+
+.reset-btn{
+  background:#3b82f6;
+  color:white;
+}
+
+/* ERROR */
+#error{
+  color:#ff6b6b;
+  font-weight:bold;
+  font-size:13px;
+  margin-top:5px;
+}
+
+/* PROFILE */
+.profile{
+  display:none;
+}
+
+/* ID CARD */
+.id-card{
   margin-top:15px;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  box-shadow:0 10px 25px rgba(0,0,0,0.25);
+  padding:22px;
+  border-radius:18px;
+
+  background:linear-gradient(135deg,#0f9b8e,#22c55e);
+  box-shadow:0 25px 50px rgba(0,0,0,0.4);
+
+  position:relative;
+  overflow:hidden;
+
+  isolation:isolate;
 }
 
-.qr-box img{
-  width:180px;
-  height:180px;
+/* INNER WATERMARK */
+.id-card::after{
+  content:"";
+  position:absolute;
+
+  width:380px;
+  height:380px;
+
+  background:url('mds.png') no-repeat center;
+  background-size:contain;
+
+  opacity:0.06;
+  filter:grayscale(100%);
+
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%) scale(1.15);
+
+  pointer-events:none; /* 🔥 FIX CLICK BLOCK */
+
+  z-index:0;
+}
+
+.id-card > *{
+  position:relative;
+  z-index:2;
+}
+
+/* NAME */
+.name{
+  font-size:19px;
+  font-weight:900;
+  background:rgba(255,255,255,0.2);
+  padding:8px;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+
+/* INFO */
+.info{
+  font-size:14px;
+  margin:5px 0;
+}
+
+.bold{
+  font-weight:900;
+}
+
+/* QR */
+#qrcode{
+  margin-top:12px;
+  background:white;
+  padding:10px;
+  border-radius:12px;
+  display:inline-block;
+}
+
+/* NOTE */
+.note{
+  font-size:13px;
+  font-weight:900;
+  margin-top:12px;
+  line-height:1.4;
 }
 
 /* LOADING */
@@ -168,17 +251,17 @@ button:hover{
   align-items:center;
   justify-content:center;
   flex-direction:column;
-  z-index:9999;
+  z-index:999;
+  color:white;
 }
 
 .spinner{
-  width:50px;
-  height:50px;
-  border:5px solid #ccc;
-  border-top:5px solid #10b981;
+  width:55px;
+  height:55px;
+  border:4px solid rgba(255,255,255,0.3);
+  border-top:4px solid #10b981;
   border-radius:50%;
   animation:spin 1s linear infinite;
-  margin-bottom:10px;
 }
 
 @keyframes spin{
@@ -191,129 +274,124 @@ button:hover{
 
 <body>
 
-<h2>👤 QR Kehadiran Staf MDS</h2>
-
-<!-- LOADING -->
 <div id="loading" class="loading">
   <div class="spinner"></div>
-  <p>Sedang semak maklumat...</p>
+  <p>Sedang mencari data...</p>
 </div>
 
-<!-- SEARCH -->
-<div class="card" id="searchBox">
+<div class="card">
 
-  <input id="icInput" placeholder="Masukkan 4 digit terakhir IC">
+  <img src="mds.png" class="logo">
 
-  <button onclick="searchIC()">Semak</button>
+  <div class="agency">MAJLIS DAERAH SIMUNJAN</div>
 
-  <p id="error"></p>
+  <div class="address">
+    Lot 805, Gunong Ngeli New Service Centre,<br>
+    94800 Simunjan, Sarawak
+  </div>
 
-</div>
+  <div class="qr-label">📱 QR CODE STAF</div>
 
-<!-- PROFILE -->
-<div id="profile">
+  <!-- SEARCH -->
+  <div id="searchBox">
 
-  <div class="id-card">
+    <input id="icInput" placeholder="Masukkan 4 digit terakhir IC">
 
-    <!-- LOGO -->
-    <img src="mds.png" class="logo">
-
-    <div class="majlis">MAJLIS DAERAH SIMUNJAN</div>
-    <div class="subtext">Sistem Kehadiran Digital MDS</div>
-
-    <!-- NAME -->
-    <div class="name-box" id="nama">NAMA STAF</div>
-
-    <!-- INFO -->
-    <p class="bold" id="jawatan">JAWATAN</p>
-    <p class="bold" id="bahagian">BAHAGIAN</p>
-
-    <!-- QR -->
-    <div class="qr-box">
-      <div id="qrcode"></div>
-    </div>
-
-    <p style="font-size:15px;margin-top:14px;font-weight:bold;line-height:1.4;">
-  Sila tunjukkan QRCode ini kepada Urusetia untuk tujuan rekod kehadiran.<br>
-  Terima kasih.
-</p>
+    <button class="search-btn" onclick="searchIC()">Semak Maklumat</button>
 
   </div>
 
-  <div class="card">
-    <button onclick="resetPage()">🔄 Cari Semula</button>
+  <p id="error"></p>
+
+  <!-- PROFILE -->
+  <div class="profile" id="profile">
+
+    <div class="id-card">
+
+      <div class="name" id="nama"></div>
+
+      <div class="info bold" id="jawatan"></div>
+      <div class="info bold" id="bahagian"></div>
+
+      <div id="qrcode"></div>
+
+      <div class="note">
+        Sila tunjukkan QRCode ini kepada Urusetia untuk tujuan rekod kehadiran.<br>
+        Terima kasih.
+      </div>
+
+    </div>
+
+    <button class="reset-btn" onclick="location.reload()">🔄 Cari Semula</button>
+
   </div>
 
 </div>
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbxi6lk4tgJeEP_TVKcgPQraY1sasPpVUml4Oa-LfcVEohLPKNZN-c10sTIJiqTnvkkYeA/exec";
+const API="https://script.google.com/macros/s/AKfycbxi6lk4tgJeEP_TVKcgPQraY1sasPpVUml4Oa-LfcVEohLPKNZN-c10sTIJiqTnvkkYeA/exec";
 
-/* LOADING */
+/* AUTO FOCUS */
+window.onload = () => {
+  document.getElementById("icInput").focus();
+};
+
 function showLoading(){
   document.getElementById("loading").style.display="flex";
 }
+
 function hideLoading(){
   document.getElementById("loading").style.display="none";
 }
 
-/* RESET */
-function resetPage(){
-  document.getElementById("icInput").value="";
-  document.getElementById("error").innerText="";
+/* ENTER KEY SUPPORT */
+document.addEventListener("keydown", function(e){
+  if(e.key === "Enter"){
+    searchIC();
+  }
+});
 
-  document.getElementById("searchBox").style.display="block";
-  document.getElementById("profile").style.display="none";
-
-  document.getElementById("qrcode").innerHTML="";
-}
-
-/* SEARCH */
 function searchIC(){
 
-  const ic = document.getElementById("icInput").value.trim();
-  const error = document.getElementById("error");
+  let ic=document.getElementById("icInput").value.trim();
+  let error=document.getElementById("error");
 
-  if(!ic){
-    error.innerText="IC kosong";
-    return;
-  }
-
-  if(ic.length !== 4){
-    error.innerText="Masukkan 4 digit IC";
+  if(ic.length!==4){
+    error.innerText="Sila masukkan 4 digit IC";
     return;
   }
 
   showLoading();
 
-  fetch(API + "?action=searchNama&ic=" + encodeURIComponent(ic))
+  fetch(API+"?action=searchNama&ic="+ic)
   .then(r=>r.json())
   .then(res=>{
 
     hideLoading();
 
-    if(!res || !res.success){
-      error.innerText = res?.message || "Maklumat tidak sah";
+    if(!res.success){
+      error.innerText=res.message||"Maklumat tidak sah";
       return;
     }
-
-    document.getElementById("nama").innerText = res.nama;
-    document.getElementById("jawatan").innerText = res.jawatan;
-    document.getElementById("bahagian").innerText = res.bahagian;
-
-    document.getElementById("qrcode").innerHTML =
-      `<img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(res.id)}">`;
 
     document.getElementById("searchBox").style.display="none";
     document.getElementById("profile").style.display="block";
 
+    document.getElementById("nama").innerText=res.nama;
+    document.getElementById("jawatan").innerText=res.jawatan;
+    document.getElementById("bahagian").innerText=res.bahagian;
+
+    let qr="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data="+encodeURIComponent(res.id);
+
+    document.getElementById("qrcode").innerHTML=`<img src="${qr}">`;
+
   })
-  .catch(err=>{
+  .catch(()=>{
     hideLoading();
-    error.innerText="Server error / CORS";
-    console.log(err);
+    error.innerText="Ralat server";
   });
+
 }
 
 </script>
