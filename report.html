@@ -5,6 +5,7 @@
 <title>MDS Report System</title>
 
 <style>
+
 body{
   font-family:Arial;
   margin:0;
@@ -14,20 +15,24 @@ body{
   text-align:center;
 }
 
+/* BOX */
 .box{
   background:white;
   color:black;
   padding:15px;
-  margin:10px;
+  margin:10px auto;
   border-radius:12px;
+  max-width:900px;
 }
 
+/* INPUT */
 input{
   padding:10px;
   border-radius:8px;
   border:1px solid #ccc;
 }
 
+/* BUTTON */
 button{
   padding:10px 15px;
   border:none;
@@ -36,17 +41,25 @@ button{
   color:white;
   cursor:pointer;
   margin:5px;
+  transition:0.2s;
 }
 
+button:hover{
+  opacity:0.85;
+}
+
+/* INFO */
 .info{
   background:white;
   color:black;
   padding:10px;
   border-radius:10px;
-  margin:10px;
+  margin:10px auto;
   font-weight:bold;
+  max-width:900px;
 }
 
+/* TABLE */
 table{
   width:100%;
   border-collapse:collapse;
@@ -78,11 +91,11 @@ th{
   border-radius:10px;
   display:none;
   z-index:999;
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
 }
 
 .popup button{
   width:100%;
-  margin-top:8px;
 }
 
 /* LOADING */
@@ -97,6 +110,7 @@ th{
   align-items:center;
   flex-direction:column;
   z-index:1000;
+  pointer-events:all;
 }
 
 .spinner{
@@ -130,7 +144,7 @@ th{
   <input type="date" id="tarikh"><br><br>
 
   <button onclick="loadMesyuarat()">🔍 Cari Report</button>
-  <button onclick="downloadPDF()">📥 Print PDF</button>
+  <button onclick="downloadPDF()">📥 PDF</button>
 </div>
 
 <div class="info">
@@ -174,13 +188,13 @@ const API = "https://script.google.com/macros/s/AKfycbyF0lHOktSRFfH8bz6afgwIUPSM
 
 const popup = document.getElementById("popup");
 
-/* ================= LOGIN CHECK ================= */
+/* LOGIN CHECK */
 if(sessionStorage.getItem("mds_login") !== "true"){
   alert("Sila login dahulu");
   window.location.href="login.html";
 }
 
-/* ================= LOADING ================= */
+/* LOADING */
 function showLoading(){
   document.getElementById("loading").style.display="flex";
 }
@@ -189,14 +203,16 @@ function hideLoading(){
   document.getElementById("loading").style.display="none";
 }
 
-/* ================= SAFE FETCH ================= */
+/* API */
 async function postAPI(payload){
 
   try{
     let res = await fetch(API,{
       method:"POST",
-      headers:{"Content-Type":"application/x-www-form-urlencoded"},
-      body:new URLSearchParams(payload)
+      headers:{
+        "Content-Type":"text/plain"
+      },
+      body: JSON.stringify(payload)
     });
 
     return await res.json();
@@ -207,11 +223,10 @@ async function postAPI(payload){
   }
 }
 
-/* ================= MESYUARAT ================= */
+/* LOAD MESYUARAT */
 async function loadMesyuarat(){
 
   let tarikh = document.getElementById("tarikh").value;
-
   if(!tarikh){
     alert("Sila pilih tarikh");
     return;
@@ -219,7 +234,7 @@ async function loadMesyuarat(){
 
   showLoading();
 
-  document.getElementById("tarikhInfo").innerText = formatDDMMYYYY(tarikh);
+  document.getElementById("tarikhInfo").innerText = formatDate(tarikh);
 
   let data = await postAPI({
     action:"listMesyuarat",
@@ -233,7 +248,7 @@ async function loadMesyuarat(){
 
   if(!Array.isArray(data) || data.length === 0){
     list.innerHTML = "Tiada mesyuarat";
-    popup.style.display = "block";
+    popup.style.display="block";
     return;
   }
 
@@ -247,11 +262,10 @@ async function loadMesyuarat(){
   popup.style.display="block";
 }
 
-/* ================= REPORT ================= */
+/* REPORT */
 async function loadReport(mesyuarat){
 
   popup.style.display="none";
-
   showLoading();
 
   document.getElementById("mesyuarat").innerText = mesyuarat;
@@ -274,8 +288,10 @@ async function loadReport(mesyuarat){
     return;
   }
 
+  let rows = "";
+
   data.forEach((r,i)=>{
-    tbody.innerHTML += `
+    rows += `
     <tr>
       <td>${i+1}</td>
       <td>${r.nama || "-"}</td>
@@ -287,9 +303,10 @@ async function loadReport(mesyuarat){
     </tr>`;
   });
 
+  tbody.innerHTML = rows;
 }
 
-/* ================= PDF ================= */
+/* PDF */
 async function downloadPDF(){
 
   let tarikh = document.getElementById("tarikh").value;
@@ -317,8 +334,8 @@ async function downloadPDF(){
   }
 }
 
-/* ================= HELPERS ================= */
-function formatDDMMYYYY(dateStr){
+/* FORMAT DATE */
+function formatDate(dateStr){
 
   if(!dateStr) return "";
 
@@ -328,9 +345,10 @@ function formatDDMMYYYY(dateStr){
   let month = String(d.getMonth()+1).padStart(2,'0');
   let year = d.getFullYear();
 
-  return day + month + year;
+  return `${day}/${month}/${year}`;
 }
 
+/* POPUP */
 function closePopup(){
   popup.style.display="none";
 }
