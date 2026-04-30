@@ -220,11 +220,9 @@ fetch(API_URL,{
 method:"POST",
 headers:{"Content-Type":"text/plain"},
 body:JSON.stringify({
-nama:text,
-jawatan:"-",
-bahagian:"-",
-tarikh:data.tarikh,
-mesyuarat:data.mesyuarat
+id: text,   // 🔥 PENTING: QR mesti ID staf
+tarikh: data.tarikh,
+mesyuarat: data.mesyuarat
 })
 })
 .then(async r=>{
