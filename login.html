@@ -225,7 +225,7 @@ button{
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbzUy5zqYFKyteTPt4nIyWq-y2hjY0Inn2HLN6yQkCRVWha23E-3p2-o1QYo3vHcPOPRXQ/exec";
+const API = "https://script.google.com/macros/s/AKfycbx0kwbgWinbdFkirDdZEJTdegAIM-OdpBA_LP1P0ElRw-IKkr6kQDzDIL5f3rBfW2dmgw/exec";
 
 /* ================= LOADING ================= */
 function showLoading(){
@@ -259,14 +259,19 @@ async function login(){
       headers:{
         "Content-Type":"application/x-www-form-urlencoded"
       },
-      body:new URLSearchParams({
-        action:"login",
-        username:user,
-        password:pass
-      })
-    });
+     body:new URLSearchParams({
+  action:"login",
+  username:user,
+  password:pass
+})
 
     let data = await res.json();
+
+    if(data.role === "admin"){
+  window.location.href="dashboard_admin.html";
+}else{
+  window.location.href="dashboard_user.html";
+}
 
     if(!data.success){
       error.innerText = data.message || "Login gagal";
