@@ -162,7 +162,7 @@ th{background:#f2f2f2}
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbwdE0iwiU0WalvZbhnkB3TU6p5WYF1wmyQ6Gzs1s7YN_CAq2GhjsbZiTN4tOc_50gFTQA/exec";
+const API = "https://script.google.com/macros/s/AKfycbw6zVoZVBNcsuvt-VE0My1DC-xQKYeeQaaIClelN372dx8CxfWwqTS5pOS1U13jWem6Og/exec";
 
 const popup = document.getElementById("popup");
 
@@ -306,23 +306,25 @@ async function downloadPDF(){
 }
 
 /* DATE SAFE */
-function formatDate(d){
-  if(!d) return "";
+function formatDate(dateStr){
 
-  if(d.includes("-")){
-    let p = d.split("-");
+  if(!dateStr) return "";
+
+  // input dari <input type="date"> = yyyy-mm-dd
+  if(dateStr.includes("-")){
+    let p = dateStr.split("-");
     return `${p[2]}/${p[1]}/${p[0]}`;
   }
 
-  let date = new Date(d);
-  if(isNaN(date)) return d;
+  let d = new Date(dateStr);
 
-  return date.toLocaleDateString("ms-MY");
-}
+  if(isNaN(d)) return dateStr;
 
-/* POPUP */
-function closePopup(){
-  popup.style.display="none";
+  let dd = String(d.getDate()).padStart(2,'0');
+  let mm = String(d.getMonth()+1).padStart(2,'0');
+  let yyyy = d.getFullYear();
+
+  return `${dd}/${mm}/${yyyy}`;
 }
 
 </script>
