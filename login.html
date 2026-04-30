@@ -2,95 +2,65 @@
 <html lang="ms">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Login MDS Premium</title>
+<title>QR Staf MDS</title>
 
 <style>
 
+/* ================= BODY ================= */
 body{
   font-family:Arial;
   margin:0;
   min-height:100vh;
+  background:linear-gradient(135deg,#064e3b,#022c22);
   display:flex;
   align-items:center;
   justify-content:center;
-  background:linear-gradient(135deg,#064e3b,#022c22);
+  overflow:hidden;
 }
 
-/* BACKGROUND EFFECT */
-body::before{
-  content:"";
-  position:fixed;
-  width:300px;
-  height:300px;
-  background:rgba(255,255,255,0.08);
-  top:-50px;
-  left:-50px;
-  border-radius:50%;
-  filter:blur(30px);
-}
-
-body::after{
-  content:"";
-  position:fixed;
-  width:250px;
-  height:250px;
-  background:rgba(16,185,129,0.15);
-  bottom:-60px;
-  right:-60px;
-  border-radius:50%;
-  filter:blur(30px);
-}
-
-/* CARD */
+/* ================= CARD ================= */
 .card{
   width:360px;
-  padding:25px;
-  border-radius:18px;
-
-  background:rgba(255,255,255,0.12);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-
+  background:rgba(255,255,255,0.10);
+  backdrop-filter:blur(18px);
   border:1px solid rgba(255,255,255,0.2);
-
-  box-shadow:
-    0 20px 40px rgba(0,0,0,0.35),
-    inset 0 1px 0 rgba(255,255,255,0.2);
-
+  border-radius:20px;
+  padding:20px;
   text-align:center;
   color:white;
+  box-shadow:0 25px 60px rgba(0,0,0,0.4);
+  position:relative;
+  overflow:hidden;
 }
 
-/* LOGO */
+/* ================= LOGO ================= */
 .logo{
   width:70px;
-  margin-bottom:10px;
+  margin-bottom:5px;
 }
 
-/* TITLE */
-h2{
-  margin:10px 0 5px;
-  font-size:18px;
+/* ================= TEXT ================= */
+.title{
+  font-weight:bold;
+  font-size:16px;
 }
 
-.sub{
-  font-size:12px;
+.address{
+  font-size:11px;
   opacity:0.8;
-  margin-bottom:15px;
 }
 
-/* INPUT */
+/* ================= INPUT ================= */
 input{
   width:90%;
   padding:12px;
-  margin:8px 0;
   border-radius:10px;
   border:none;
+  margin:10px 0;
   outline:none;
-  font-size:14px;
 }
 
-/* BUTTON */
+/* ================= BUTTON ================= */
 button{
   width:100%;
   padding:12px;
@@ -98,56 +68,105 @@ button{
   border-radius:10px;
   font-weight:bold;
   cursor:pointer;
-  margin-top:8px;
+  background:#10b981;
+  color:white;
   transition:0.2s;
 }
 
-.login-btn{
-  background:#10b981;
-  color:white;
-}
-.login-btn:hover{
-  background:#059669;
-  transform:scale(1.02);
+button:hover{
+  background:#0f9b7a;
 }
 
-.report-btn{
-  background:#3b82f6;
-  color:white;
-}
-.report-btn:hover{
-  background:#2563eb;
-  transform:scale(1.02);
+/* ================= ERROR ================= */
+#error{
+  color:#ffb4b4;
+  font-size:12px;
+  margin-top:5px;
 }
 
-.qr-btn{
-  background:#8b5cf6;
-  color:white;
-}
-.qr-btn:hover{
-  background:#7c3aed;
-  transform:scale(1.02);
+/* ================= PROFILE ================= */
+#profile{
+  display:none;
 }
 
-/* LOADING */
+/* ================= ID CARD ================= */
+.id-card{
+  margin-top:15px;
+  padding:20px;
+  border-radius:15px;
+  background:linear-gradient(135deg,#0f9b8e,#22c55e);
+  position:relative;
+  overflow:hidden;
+}
+
+/* watermark */
+.id-card::before{
+  content:"";
+  position:absolute;
+  width:320px;
+  height:320px;
+  background:url('mds.png') no-repeat center;
+  background-size:contain;
+  opacity:0.06;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+}
+
+/* content above watermark */
+.id-card > *{
+  position:relative;
+}
+
+/* ================= NAME ================= */
+.name{
+  font-size:18px;
+  font-weight:bold;
+  background:rgba(255,255,255,0.2);
+  padding:8px;
+  border-radius:10px;
+}
+
+/* ================= INFO ================= */
+.info{
+  font-size:13px;
+  font-weight:bold;
+  margin-top:5px;
+}
+
+/* ================= QR ================= */
+#qrcode{
+  margin-top:12px;
+  background:white;
+  padding:10px;
+  border-radius:10px;
+  display:inline-block;
+}
+
+/* ================= LOADING OVERLAY ================= */
 .loading{
   position:fixed;
-  top:0;left:0;
+  top:0;
+  left:0;
   width:100%;
-  height:100%;
-  background:rgba(0,0,0,0.6);
+  height:100vh;
+  background:rgba(0,0,0,0.65);
+  backdrop-filter:blur(5px);
+
   display:none;
   align-items:center;
   justify-content:center;
   flex-direction:column;
+
+  z-index:99999;
   color:white;
 }
 
 .spinner{
-  width:55px;
-  height:55px;
-  border:4px solid rgba(255,255,255,0.3);
-  border-top:4px solid #10b981;
+  width:60px;
+  height:60px;
+  border:5px solid rgba(255,255,255,0.2);
+  border-top:5px solid #10b981;
   border-radius:50%;
   animation:spin 1s linear infinite;
 }
@@ -155,12 +174,6 @@ button{
 @keyframes spin{
   0%{transform:rotate(0deg);}
   100%{transform:rotate(360deg);}
-}
-
-.small{
-  font-size:11px;
-  opacity:0.7;
-  margin-top:10px;
 }
 
 </style>
@@ -171,82 +184,107 @@ button{
 <!-- LOADING -->
 <div id="loading" class="loading">
   <div class="spinner"></div>
-  <p>Login in progress, please wait...</p>
+  <p>Sedang menyemak maklumat...</p>
 </div>
 
 <!-- CARD -->
 <div class="card">
 
-  <!-- LOGO -->
   <img src="mds.png" class="logo">
 
-  <h2>MAJLIS DAERAH SIMUNJAN</h2>
-  <div class="sub">Sistem Kehadiran Rasmi MDS</div>
+  <div class="title">MAJLIS DAERAH SIMUNJAN</div>
+  <div class="address">
+    QR CODE STAF KEHADIRAN
+  </div>
 
-  <input id="user" placeholder="Username">
-  <input id="pass" type="password" placeholder="Password">
+  <!-- SEARCH -->
+  <input id="icInput" placeholder="Masukkan 4 digit IC terakhir">
 
-  <button class="login-btn" onclick="login()">Login</button>
-  <button class="report-btn" onclick="goReport()">🔍 Cari Report</button>
-  <button class="qr-btn" onclick="goQR()">📱 QRCode Staf</button>
+  <button onclick="searchIC()">Semak Maklumat</button>
 
-  <div class="small">© MDS Attendance System</div>
+  <p id="error"></p>
+
+  <!-- PROFILE -->
+  <div id="profile">
+
+    <div class="id-card">
+
+      <div class="name" id="nama">Nama</div>
+
+      <div class="info" id="jawatan"></div>
+      <div class="info" id="bahagian"></div>
+
+      <div id="qrcode"></div>
+
+      <p style="font-size:11px;margin-top:10px;">
+        Sila tunjukkan QRCode ini kepada Urusetia untuk tujuan rekod kehadiran.
+      </p>
+
+    </div>
+
+  </div>
 
 </div>
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbwUfYEUShEnVyld8GIeQTeY3STUDHvwK8QsIqah2D1vFNoup7NMupjsYh-z-6CExH75PA/exec";
+const API = "https://script.google.com/macros/s/AKfycbxi6lk4tgJeEP_TVKcgPQraY1sasPpVUml4Oa-LfcVEohLPKNZN-c10sTIJiqTnvkkYeA/exec";
 
-/* LOADING */
+/* ================= LOADING ================= */
 function showLoading(){
   document.getElementById("loading").style.display="flex";
+  document.body.style.overflow="hidden";
 }
+
 function hideLoading(){
   document.getElementById("loading").style.display="none";
+  document.body.style.overflow="auto";
 }
 
-/* LOGIN */
-function login(){
+/* ================= SEARCH ================= */
+function searchIC(){
 
+  let ic = document.getElementById("icInput").value.trim();
+  let error = document.getElementById("error");
+
+  if(ic.length !== 4){
+    error.innerText = "Sila masukkan 4 digit IC";
+    return;
+  }
+
+  error.innerText="";
   showLoading();
 
-  fetch(API,{
-    method:"POST",
-    headers:{"Content-Type":"text/plain"},
-    body:JSON.stringify({
-      action:"login",
-      user:user.value,
-      pass:pass.value
-    })
-  })
+  fetch(API+"?action=searchNama&ic="+ic)
   .then(r=>r.json())
   .then(res=>{
 
     hideLoading();
 
     if(!res.success){
-      alert("Login gagal");
+      error.innerText = res.message || "Maklumat tidak sah";
       return;
     }
 
-    sessionStorage.setItem("mds_login","true");
-    window.location.href="dashboard.html";
+    document.getElementById("profile").style.display="block";
+
+    document.getElementById("nama").innerText=res.nama;
+    document.getElementById("jawatan").innerText=res.jawatan;
+    document.getElementById("bahagian").innerText=res.bahagian;
+
+    let qr = "https://api.qrserver.com/v1/create-qr-code/?size=170x170&data="
+             + encodeURIComponent(res.id)
+             + "&t=" + Date.now();
+
+    document.getElementById("qrcode").innerHTML =
+      `<img src="${qr}">`;
 
   })
-  .catch(()=>{
+  .catch(err=>{
     hideLoading();
-    alert("Server error");
+    error.innerText="Server error";
   });
-}
 
-/* NAV */
-function goReport(){
-  window.location.href="report.html";
-}
-
-function goQR(){
-  window.location.href="ahli.html";
 }
 
 </script>
