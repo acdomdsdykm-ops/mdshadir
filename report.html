@@ -179,18 +179,26 @@ function hideLoading(){loading.style.display="none"}
 /* API FIXED */
 async function postAPI(payload){
 
+  let url = API;
+
+  let form = new URLSearchParams();
+
+  Object.keys(payload).forEach(k=>{
+    form.append(k, payload[k]);
+  });
+
   try{
-    const res = await fetch(API,{
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(payload)
+
+    let res = await fetch(url, {
+      method: "POST",
+      body: form
     });
 
     return await res.json();
 
-  }catch(e){
-    console.log(e);
-    return [];
+  }catch(err){
+    console.log(err);
+    return null;
   }
 }
 
