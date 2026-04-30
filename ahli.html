@@ -16,103 +16,22 @@ body{
   justify-content:center;
 }
 
-/* ================= MAIN CARD ================= */
 .card{
   width:360px;
-
   background:rgba(255,255,255,0.10);
   backdrop-filter:blur(16px);
-  -webkit-backdrop-filter:blur(16px);
-
   border:1px solid rgba(255,255,255,0.18);
   border-radius:22px;
-
   padding:20px;
   text-align:center;
   color:white;
-
   position:relative;
   overflow:hidden;
-
   box-shadow:0 30px 70px rgba(0,0,0,0.45);
 }
 
-/* OUTER WATERMARK */
-.card::before{
-  content:"";
-  position:absolute;
+.logo{width:75px;margin-bottom:5px;}
 
-  width:280px;
-  height:280px;
-
-  background:url('mds.png') no-repeat center;
-  background-size:contain;
-
-  opacity:0.06;
-  filter:grayscale(100%);
-
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-
-  pointer-events:none; /* 🔥 FIX CLICK BLOCK */
-}
-
-/* GLOW */
-.card::after{
-  content:"";
-  position:absolute;
-  width:320px;
-  height:320px;
-
-  background:radial-gradient(circle,
-    rgba(16,185,129,0.25),
-    transparent 70%
-  );
-
-  top:-100px;
-  left:-100px;
-  border-radius:50%;
-
-  pointer-events:none; /* 🔥 FIX CLICK BLOCK */
-}
-
-/* LOGO */
-.logo{
-  width:75px;
-  margin-bottom:5px;
-}
-
-/* AGENCY */
-.agency{
-  font-size:15px;
-  font-weight:800;
-}
-
-/* ADDRESS */
-.address{
-  font-size:11px;
-  opacity:0.85;
-  line-height:1.4;
-}
-
-/* LABEL */
-.qr-label{
-  margin-top:12px;
-  display:inline-block;
-
-  padding:10px 18px;
-  font-size:14px;
-  font-weight:900;
-
-  color:#064e3b;
-
-  background:linear-gradient(135deg,#ffffff,#eafff5);
-  border:2px solid #10b981;
-  border-radius:14px;
-}
-
-/* INPUT */
 input{
   width:92%;
   padding:12px;
@@ -122,7 +41,6 @@ input{
   outline:none;
 }
 
-/* BUTTON */
 button{
   width:100%;
   padding:12px;
@@ -130,80 +48,31 @@ button{
   border-radius:10px;
   font-weight:bold;
   cursor:pointer;
-  transition:0.2s ease;
+  transition:0.2s;
 }
 
-button:hover{
-  transform:scale(1.02);
-}
+button:hover{transform:scale(1.02);}
 
-.search-btn{
-  background:#10b981;
-  color:white;
-}
+.search-btn{background:#10b981;color:white;}
+.reset-btn{background:#3b82f6;color:white;}
 
-.reset-btn{
-  background:#3b82f6;
-  color:white;
-}
-
-/* ERROR */
 #error{
   color:#ff6b6b;
-  font-weight:bold;
   font-size:13px;
   margin-top:5px;
+  min-height:18px;
 }
 
-/* PROFILE */
-.profile{
-  display:none;
-}
+.profile{display:none;}
 
-/* ID CARD */
 .id-card{
   margin-top:15px;
   padding:22px;
   border-radius:18px;
-
   background:linear-gradient(135deg,#0f9b8e,#22c55e);
-  box-shadow:0 25px 50px rgba(0,0,0,0.4);
-
   position:relative;
-  overflow:hidden;
-
-  isolation:isolate;
 }
 
-/* INNER WATERMARK */
-.id-card::after{
-  content:"";
-  position:absolute;
-
-  width:380px;
-  height:380px;
-
-  background:url('mds.png') no-repeat center;
-  background-size:contain;
-
-  opacity:0.06;
-  filter:grayscale(100%);
-
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%) scale(1.15);
-
-  pointer-events:none; /* 🔥 FIX CLICK BLOCK */
-
-  z-index:0;
-}
-
-.id-card > *{
-  position:relative;
-  z-index:2;
-}
-
-/* NAME */
 .name{
   font-size:19px;
   font-weight:900;
@@ -213,17 +82,8 @@ button:hover{
   margin-bottom:10px;
 }
 
-/* INFO */
-.info{
-  font-size:14px;
-  margin:5px 0;
-}
+.info{font-size:14px;margin:5px 0;font-weight:700;}
 
-.bold{
-  font-weight:900;
-}
-
-/* QR */
 #qrcode{
   margin-top:12px;
   background:white;
@@ -232,15 +92,6 @@ button:hover{
   display:inline-block;
 }
 
-/* NOTE */
-.note{
-  font-size:13px;
-  font-weight:900;
-  margin-top:12px;
-  line-height:1.4;
-}
-
-/* LOADING */
 .loading{
   position:fixed;
   top:0;left:0;
@@ -265,7 +116,6 @@ button:hover{
 }
 
 @keyframes spin{
-  0%{transform:rotate(0deg);}
   100%{transform:rotate(360deg);}
 }
 
@@ -283,42 +133,28 @@ button:hover{
 
   <img src="mds.png" class="logo">
 
-  <div class="agency">MAJLIS DAERAH SIMUNJAN</div>
+  <div><b>MAJLIS DAERAH SIMUNJAN</b></div>
 
-  <div class="address">
-    Lot 805, Gunong Ngeli New Service Centre,<br>
-    94800 Simunjan, Sarawak
+  <div style="font-size:12px;margin-top:5px;">
+    QR CODE STAF
   </div>
 
-  <div class="qr-label">📱 QR CODE STAF</div>
+  <input id="icInput" placeholder="Masukkan 4 digit terakhir IC">
 
-  <!-- SEARCH -->
-  <div id="searchBox">
-
-    <input id="icInput" placeholder="Masukkan 4 digit terakhir IC">
-
-    <button class="search-btn" onclick="searchIC()">Semak Maklumat</button>
-
-  </div>
+  <button class="search-btn" onclick="searchIC()">Semak Maklumat</button>
 
   <p id="error"></p>
 
-  <!-- PROFILE -->
   <div class="profile" id="profile">
 
     <div class="id-card">
 
       <div class="name" id="nama"></div>
 
-      <div class="info bold" id="jawatan"></div>
-      <div class="info bold" id="bahagian"></div>
+      <div class="info" id="jawatan"></div>
+      <div class="info" id="bahagian"></div>
 
       <div id="qrcode"></div>
-
-      <div class="note">
-        Sila tunjukkan QRCode ini kepada Urusetia untuk tujuan rekod kehadiran.<br>
-        Terima kasih.
-      </div>
 
     </div>
 
@@ -330,12 +166,13 @@ button:hover{
 
 <script>
 
-const API="https://script.google.com/macros/s/AKfycbwdE0iwiU0WalvZbhnkB3TU6p5WYF1wmyQ6Gzs1s7YN_CAq2GhjsbZiTN4tOc_50gFTQA/exec";
+const API = "https://script.google.com/macros/s/AKfycbw6zVoZVBNcsuvt-VE0My1DC-xQKYeeQaaIClelN372dx8CxfWwqTS5pOS1U13jWem6Og/exec";
 
-/* AUTO FOCUS */
-window.onload = () => {
-  document.getElementById("icInput").focus();
-};
+window.onload = () => document.getElementById("icInput").focus();
+
+document.addEventListener("keydown", e=>{
+  if(e.key==="Enter") searchIC();
+});
 
 function showLoading(){
   document.getElementById("loading").style.display="flex";
@@ -345,53 +182,57 @@ function hideLoading(){
   document.getElementById("loading").style.display="none";
 }
 
-/* ENTER KEY SUPPORT */
-document.addEventListener("keydown", function(e){
-  if(e.key === "Enter"){
-    searchIC();
-  }
-});
+async function searchIC(){
 
-function searchIC(){
+  let ic = document.getElementById("icInput").value.trim();
+  let error = document.getElementById("error");
 
-  let ic=document.getElementById("icInput").value.trim();
-  let error=document.getElementById("error");
+  error.innerText="";
 
-  if(ic.length!==4){
+  if(ic.length !== 4){
     error.innerText="Sila masukkan 4 digit IC";
     return;
   }
 
   showLoading();
 
-  fetch(API+"?action=searchNama&ic="+ic)
-  .then(r=>r.json())
-  .then(res=>{
+  try {
+
+    let res = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "searchNama",
+        ic: ic
+      })
+    });
+
+    let data = await res.json();
 
     hideLoading();
 
-    if(!res.success){
-      error.innerText=res.message||"Maklumat tidak sah";
+    if(!data.success){
+      error.innerText = data.message || "Tidak dijumpai";
       return;
     }
 
-    document.getElementById("searchBox").style.display="none";
     document.getElementById("profile").style.display="block";
 
-    document.getElementById("nama").innerText=res.nama;
-    document.getElementById("jawatan").innerText=res.jawatan;
-    document.getElementById("bahagian").innerText=res.bahagian;
+    document.getElementById("nama").innerText = data.nama;
+    document.getElementById("jawatan").innerText = data.jawatan;
+    document.getElementById("bahagian").innerText = data.bahagian;
 
-    let qr = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(res.id)}&t=${Date.now()}`;
-    
-    document.getElementById("qrcode").innerHTML=`<img src="${qr}">`;
+    let qrURL = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(data.id)}&t=${Date.now()}`;
 
-  })
-  .catch(()=>{
+    document.getElementById("qrcode").innerHTML = `<img src="${qrURL}">`;
+
+  } catch(err){
+
     hideLoading();
-    error.innerText="Ralat server";
-  });
+    error.innerText = "Ralat server / API tidak aktif";
+    console.log(err);
 
+  }
 }
 
 </script>
