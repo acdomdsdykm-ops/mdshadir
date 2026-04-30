@@ -2,7 +2,7 @@
 <html lang="ms">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>QR Staf MDS</title>
+<title>Login Sistem Kehadiran MDS</title>
 
 <style>
 
@@ -11,52 +11,59 @@ body{
   font-family:Arial;
   margin:0;
   min-height:100vh;
-  background:linear-gradient(135deg,#064e3b,#022c22);
   display:flex;
   align-items:center;
   justify-content:center;
-  overflow:hidden;
-}
-
-/* ================= CARD ================= */
-.card{
-  width:360px;
-  background:rgba(255,255,255,0.10);
-  backdrop-filter:blur(18px);
-  border:1px solid rgba(255,255,255,0.2);
-  border-radius:20px;
-  padding:20px;
-  text-align:center;
+  flex-direction:column;
+  background:linear-gradient(135deg,#064e3b,#022c22);
   color:white;
-  box-shadow:0 25px 60px rgba(0,0,0,0.4);
-  position:relative;
-  overflow:hidden;
 }
 
-/* ================= LOGO ================= */
-.logo{
-  width:70px;
-  margin-bottom:5px;
+/* ================= LOADING ================= */
+.loading{
+  position:fixed;
+  top:0;left:0;
+  width:100%;
+  height:100vh;
+  background:rgba(0,0,0,0.65);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  z-index:9999;
 }
 
-/* ================= TEXT ================= */
-.title{
-  font-weight:bold;
-  font-size:16px;
+.spinner{
+  width:60px;
+  height:60px;
+  border:5px solid rgba(255,255,255,0.2);
+  border-top:5px solid #2ecc71;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
 }
 
-.address{
-  font-size:11px;
-  opacity:0.8;
+@keyframes spin{
+  0%{transform:rotate(0);}
+  100%{transform:rotate(360deg);}
+}
+
+/* ================= PANEL ================= */
+.panel{
+  background:white;
+  color:black;
+  width:330px;
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.3);
 }
 
 /* ================= INPUT ================= */
 input{
-  width:90%;
-  padding:12px;
-  border-radius:10px;
-  border:none;
-  margin:10px 0;
+  width:95%;
+  padding:10px;
+  margin:8px 0;
+  border-radius:8px;
+  border:1px solid #ccc;
   outline:none;
 }
 
@@ -66,114 +73,37 @@ button{
   padding:12px;
   border:none;
   border-radius:10px;
-  font-weight:bold;
   cursor:pointer;
-  background:#10b981;
+  font-weight:bold;
+  margin-top:6px;
+}
+
+/* LOGIN */
+.login-btn{
+  background:#3498db;
   color:white;
-  transition:0.2s;
 }
+.login-btn:hover{background:#2980b9;}
 
-button:hover{
-  background:#0f9b7a;
+/* REPORT */
+.report-btn{
+  background:#2ecc71;
+  color:white;
 }
+.report-btn:hover{background:#27ae60;}
 
-/* ================= ERROR ================= */
+/* QR STAFF */
+.qr-btn{
+  background:#f39c12;
+  color:white;
+}
+.qr-btn:hover{background:#d68910;}
+
+/* ERROR */
 #error{
-  color:#ffb4b4;
+  color:red;
   font-size:12px;
   margin-top:5px;
-}
-
-/* ================= PROFILE ================= */
-#profile{
-  display:none;
-}
-
-/* ================= ID CARD ================= */
-.id-card{
-  margin-top:15px;
-  padding:20px;
-  border-radius:15px;
-  background:linear-gradient(135deg,#0f9b8e,#22c55e);
-  position:relative;
-  overflow:hidden;
-}
-
-/* watermark */
-.id-card::before{
-  content:"";
-  position:absolute;
-  width:320px;
-  height:320px;
-  background:url('mds.png') no-repeat center;
-  background-size:contain;
-  opacity:0.06;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-}
-
-/* content above watermark */
-.id-card > *{
-  position:relative;
-}
-
-/* ================= NAME ================= */
-.name{
-  font-size:18px;
-  font-weight:bold;
-  background:rgba(255,255,255,0.2);
-  padding:8px;
-  border-radius:10px;
-}
-
-/* ================= INFO ================= */
-.info{
-  font-size:13px;
-  font-weight:bold;
-  margin-top:5px;
-}
-
-/* ================= QR ================= */
-#qrcode{
-  margin-top:12px;
-  background:white;
-  padding:10px;
-  border-radius:10px;
-  display:inline-block;
-}
-
-/* ================= LOADING OVERLAY ================= */
-.loading{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100vh;
-  background:rgba(0,0,0,0.65);
-  backdrop-filter:blur(5px);
-
-  display:none;
-  align-items:center;
-  justify-content:center;
-  flex-direction:column;
-
-  z-index:99999;
-  color:white;
-}
-
-.spinner{
-  width:60px;
-  height:60px;
-  border:5px solid rgba(255,255,255,0.2);
-  border-top:5px solid #10b981;
-  border-radius:50%;
-  animation:spin 1s linear infinite;
-}
-
-@keyframes spin{
-  0%{transform:rotate(0deg);}
-  100%{transform:rotate(360deg);}
 }
 
 </style>
@@ -184,107 +114,98 @@ button:hover{
 <!-- LOADING -->
 <div id="loading" class="loading">
   <div class="spinner"></div>
-  <p>Sedang menyemak maklumat...</p>
+  <p>Memproses...</p>
 </div>
 
-<!-- CARD -->
-<div class="card">
+<h2>🏢 Sistem Kehadiran MDS</h2>
 
-  <img src="mds.png" class="logo">
+<div class="panel">
 
-  <div class="title">MAJLIS DAERAH SIMUNJAN</div>
-  <div class="address">
-    QR CODE STAF KEHADIRAN
-  </div>
+  <input id="user" placeholder="Username">
+  <input id="pass" type="password" placeholder="Password">
 
-  <!-- SEARCH -->
-  <input id="icInput" placeholder="Masukkan 4 digit IC terakhir">
+  <!-- LOGIN -->
+  <button class="login-btn" onclick="login()">Login</button>
 
-  <button onclick="searchIC()">Semak Maklumat</button>
+  <!-- REPORT -->
+  <button class="report-btn" onclick="goReport()">🔍 Cari Report</button>
+
+  <!-- QR CODE STAFF -->
+  <button class="qr-btn" onclick="goQR()">📱 QRCode Staf</button>
 
   <p id="error"></p>
-
-  <!-- PROFILE -->
-  <div id="profile">
-
-    <div class="id-card">
-
-      <div class="name" id="nama">Nama</div>
-
-      <div class="info" id="jawatan"></div>
-      <div class="info" id="bahagian"></div>
-
-      <div id="qrcode"></div>
-
-      <p style="font-size:11px;margin-top:10px;">
-        Sila tunjukkan QRCode ini kepada Urusetia untuk tujuan rekod kehadiran.
-      </p>
-
-    </div>
-
-  </div>
 
 </div>
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbxi6lk4tgJeEP_TVKcgPQraY1sasPpVUml4Oa-LfcVEohLPKNZN-c10sTIJiqTnvkkYeA/exec";
+const API = "https://script.google.com/macros/s/AKfycbwUfYEUShEnVyld8GIeQTeY3STUDHvwK8QsIqah2D1vFNoup7NMupjsYh-z-6CExH75PA/exec";
 
 /* ================= LOADING ================= */
 function showLoading(){
   document.getElementById("loading").style.display="flex";
-  document.body.style.overflow="hidden";
 }
 
 function hideLoading(){
   document.getElementById("loading").style.display="none";
-  document.body.style.overflow="auto";
 }
 
-/* ================= SEARCH ================= */
-function searchIC(){
+/* ================= LOGIN ================= */
+function login(){
 
-  let ic = document.getElementById("icInput").value.trim();
-  let error = document.getElementById("error");
+  const user = document.getElementById("user").value.trim();
+  const pass = document.getElementById("pass").value.trim();
+  const error = document.getElementById("error");
 
-  if(ic.length !== 4){
-    error.innerText = "Sila masukkan 4 digit IC";
+  error.innerText="";
+
+  if(!user || !pass){
+    error.innerText="Sila isi username & password";
     return;
   }
 
-  error.innerText="";
   showLoading();
 
-  fetch(API+"?action=searchNama&ic="+ic)
+  fetch(API,{
+    method:"POST",
+    headers:{"Content-Type":"text/plain"},
+    body:JSON.stringify({
+      action:"login",
+      user:user,
+      pass:pass
+    })
+  })
   .then(r=>r.json())
   .then(res=>{
 
     hideLoading();
 
     if(!res.success){
-      error.innerText = res.message || "Maklumat tidak sah";
+      error.innerText="Login gagal";
       return;
     }
 
-    document.getElementById("profile").style.display="block";
+    sessionStorage.setItem("mds_login","true");
+    sessionStorage.setItem("mds_user",JSON.stringify(res));
 
-    document.getElementById("nama").innerText=res.nama;
-    document.getElementById("jawatan").innerText=res.jawatan;
-    document.getElementById("bahagian").innerText=res.bahagian;
-
-    let qr = "https://api.qrserver.com/v1/create-qr-code/?size=170x170&data="
-             + encodeURIComponent(res.id)
-             + "&t=" + Date.now();
-
-    document.getElementById("qrcode").innerHTML =
-      `<img src="${qr}">`;
+    window.location.href="dashboard.html";
 
   })
-  .catch(err=>{
+  .catch(()=>{
     hideLoading();
-    error.innerText="Server error";
+    error.innerText="Ralat server";
   });
 
+}
+
+/* ================= REPORT ================= */
+function goReport(){
+  window.location.href="report.html";
+}
+
+/* ================= QR CODE STAFF ================= */
+function goQR(){
+  window.location.href="ahli.html";
 }
 
 </script>
