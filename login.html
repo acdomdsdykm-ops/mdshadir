@@ -14,6 +14,7 @@ body{
   color:white;
 }
 
+/* PANEL LOGIN */
 .panel{
   background:white;
   color:black;
@@ -40,8 +41,53 @@ button{
   background:#3498db;
   color:white;
   cursor:pointer;
+  margin-top:8px;
 }
+
 button:hover{background:#2980b9;}
+
+/* OVERLAY LOADING */
+#loadingOverlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.85);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  color:white;
+  z-index:9999;
+}
+
+/* SPINNER */
+.spinner{
+  width:60px;
+  height:60px;
+  border:6px solid #ccc;
+  border-top:6px solid #2ecc71;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  margin-bottom:20px;
+}
+
+@keyframes spin{
+  0%{transform:rotate(0deg);}
+  100%{transform:rotate(360deg);}
+}
+
+.text-anim{
+  font-size:16px;
+  letter-spacing:1px;
+  animation:blink 1s infinite;
+}
+
+@keyframes blink{
+  0%,100%{opacity:1;}
+  50%{opacity:0.4;}
+}
 
 .report-btn{
   background:#2ecc71;
@@ -57,50 +103,82 @@ button:hover{background:#2980b9;}
 <h2>🏢 Sistem Kehadiran MDS</h2>
 
 <div class="panel">
+
   <input id="user" placeholder="Username">
   <input id="pass" type="password" placeholder="Password">
-  
+
   <button onclick="login()">Login</button>
 
-  <!-- ✅ BUTANG REPORT -->
   <button class="report-btn" onclick="goReport()">
     🔍 Cari Report
   </button>
+
+</div>
+
+<!-- 🔥 LOADING OVERLAY -->
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="text-anim">Login in progres, please wait...</div>
 </div>
 
 <script>
 
 const API="https://script.google.com/macros/s/AKfycbwUfYEUShEnVyld8GIeQTeY3STUDHvwK8QsIqah2D1vFNoup7NMupjsYh-z-6CExH75PA/exec";
 
+function showLoading(){
+  document.getElementById("loadingOverlay").style.display="flex";
+}
+
+function hideLoading(){
+  document.getElementById("loadingOverlay").style.display="none";
+}
+
 function login(){
+
+const user = document.getElementById("user").value.trim();
+const pass = document.getElementById("pass").value.trim();
+
+if(user === "" || pass === ""){
+  alert("Sila isi username dan password");
+  return;
+}
+
+showLoading();
+
 fetch(API,{
 method:"POST",
 headers:{"Content-Type":"text/plain"},
 body:JSON.stringify({
 action:"login",
-user:user.value,
-pass:pass.value
+user:user,
+pass:pass
 })
 })
 .then(r=>r.json())
 .then(res=>{
+
 if(!res.success){
+hideLoading();
 alert("Login gagal");
 return;
 }
 
 sessionStorage.setItem("mds_login","true");
+
+/* delay sikit bagi nampak animasi */
+setTimeout(()=>{
 window.location.href="dashboard.html";
+},1200);
+
 })
 .catch(()=>{
+hideLoading();
 alert("Ralat sambungan server");
 });
 }
 
-/* ✅ FUNCTION KE REPORT */
 function goReport(){
-  window.location.href="report.html"; 
-  /* kalau guna report.htm tukar sini */
+  window.location.href="report.html";
 }
 
 </script>
