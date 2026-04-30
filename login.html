@@ -237,7 +237,7 @@ function hideLoading(){
 }
 
 /* ================= LOGIN ================= */
-function login(){
+async function login(){
 
   const user = document.getElementById("user").value.trim();
   const pass = document.getElementById("pass").value.trim();
@@ -252,35 +252,38 @@ function login(){
 
   showLoading();
 
-  fetch(API,{
-    method:"POST",
-    headers:{"Content-Type":"text/plain"},
-    body:JSON.stringify({
-      action:"login",
-      user:user,
-      pass:pass
-    })
-  })
-  .then(r=>r.json())
-  .then(res=>{
+  try{
 
-    hideLoading();
+    let res = await fetch(API,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/x-www-form-urlencoded"
+      },
+      body:new URLSearchParams({
+        action:"login",
+        username:user,
+        password:pass
+      })
+    });
 
-    if(!res.success){
-      error.innerText="Login gagal";
+    let data = await res.json();
+
+    if(!data.success){
+      error.innerText = data.message || "Login gagal";
       return;
     }
 
     sessionStorage.setItem("mds_login","true");
-    sessionStorage.setItem("mds_user",JSON.stringify(res));
+    sessionStorage.setItem("mds_user",JSON.stringify(data));
 
     window.location.href="dashboard.html";
 
-  })
-  .catch(()=>{
+  }catch(err){
+    error.innerText="Ralat server / API";
+    console.log(err);
+  }finally{
     hideLoading();
-    error.innerText="Ralat server";
-  });
+  }
 
 }
 
