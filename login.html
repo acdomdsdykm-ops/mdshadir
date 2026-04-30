@@ -5,72 +5,100 @@
 <title>Login Sistem Kehadiran MDS</title>
 
 <style>
+
 body{
   font-family:Arial;
-  text-align:center;
   margin:0;
   min-height:100vh;
   background:linear-gradient(135deg,#064e3b,#022c22);
   color:white;
+  text-align:center;
 }
 
-/* PANEL LOGIN */
+/* TITLE */
+h2{
+  margin-top:60px;
+}
+
+/* LOGIN PANEL */
 .panel{
   background:white;
   color:black;
-  margin:80px auto;
+  margin:40px auto;
   padding:20px;
   border-radius:12px;
-  width:300px;
+  width:320px;
   box-shadow:0 10px 25px rgba(0,0,0,0.25);
 }
 
+/* INPUT */
 input{
   width:95%;
   padding:10px;
   margin:10px 0;
   border-radius:8px;
   border:1px solid #ccc;
+  font-size:14px;
 }
 
+/* BUTTON BASE */
 button{
   width:100%;
   padding:12px;
   border:none;
   border-radius:10px;
-  background:#3498db;
   color:white;
   cursor:pointer;
+  font-weight:bold;
   margin-top:8px;
 }
 
-button:hover{background:#2980b9;}
+/* LOGIN BUTTON */
+.login-btn{
+  background:#3498db;
+}
+.login-btn:hover{
+  background:#2980b9;
+}
 
-/* OVERLAY LOADING */
-#loadingOverlay{
+/* REPORT BUTTON */
+.report-btn{
+  background:#16a34a;
+}
+.report-btn:hover{
+  background:#15803d;
+}
+
+/* QR BUTTON */
+.qr-btn{
+  background:#8b5cf6;
+}
+.qr-btn:hover{
+  background:#7c3aed;
+}
+
+/* LOADING ANIMATION */
+.loading{
   position:fixed;
-  top:0;
-  left:0;
+  top:0;left:0;
   width:100%;
   height:100%;
-  background:rgba(0,0,0,0.85);
+  background:rgba(0,0,0,0.6);
   display:none;
-  justify-content:center;
   align-items:center;
+  justify-content:center;
   flex-direction:column;
-  color:white;
   z-index:9999;
 }
 
-/* SPINNER */
 .spinner{
-  width:60px;
-  height:60px;
-  border:6px solid #ccc;
-  border-top:6px solid #2ecc71;
+  width:55px;
+  height:55px;
+  border:5px solid #ccc;
+  border-top:5px solid #10b981;
   border-radius:50%;
   animation:spin 1s linear infinite;
-  margin-bottom:20px;
+  margin-bottom:10px;
 }
 
 @keyframes spin{
@@ -78,23 +106,12 @@ button:hover{background:#2980b9;}
   100%{transform:rotate(360deg);}
 }
 
-.text-anim{
-  font-size:16px;
-  letter-spacing:1px;
-  animation:blink 1s infinite;
+/* SMALL TEXT */
+.small{
+  font-size:12px;
+  opacity:0.8;
 }
 
-@keyframes blink{
-  0%,100%{opacity:1;}
-  50%{opacity:0.4;}
-}
-
-.report-btn{
-  background:#2ecc71;
-}
-.report-btn:hover{
-  background:#27ae60;
-}
 </style>
 </head>
 
@@ -102,83 +119,87 @@ button:hover{background:#2980b9;}
 
 <h2>🏢 Sistem Kehadiran MDS</h2>
 
+<!-- LOADING -->
+<div id="loading" class="loading">
+  <div class="spinner"></div>
+  <p>Login in progress, please wait...</p>
+</div>
+
+<!-- LOGIN PANEL -->
 <div class="panel">
 
   <input id="user" placeholder="Username">
   <input id="pass" type="password" placeholder="Password">
 
-  <button onclick="login()">Login</button>
+  <button class="login-btn" onclick="login()">Login</button>
 
   <button class="report-btn" onclick="goReport()">
     🔍 Cari Report
   </button>
 
-</div>
+  <button class="qr-btn" onclick="goQR()">
+    📱 QRCode Staf MDS
+  </button>
 
-<!-- 🔥 LOADING OVERLAY -->
-<div id="loadingOverlay">
-  <div class="spinner"></div>
-  <div class="text-anim">Login in progres, please wait...</div>
+  <p class="small">Sistem rasmi Majlis Daerah Simunjan</p>
+
 </div>
 
 <script>
 
-const API="https://script.google.com/macros/s/AKfycbwUfYEUShEnVyld8GIeQTeY3STUDHvwK8QsIqah2D1vFNoup7NMupjsYh-z-6CExH75PA/exec";
+const API = "https://script.google.com/macros/s/AKfycbwUfYEUShEnVyld8GIeQTeY3STUDHvwK8QsIqah2D1vFNoup7NMupjsYh-z-6CExH75PA/exec";
 
+/* LOADING */
 function showLoading(){
-  document.getElementById("loadingOverlay").style.display="flex";
+  document.getElementById("loading").style.display="flex";
 }
 
 function hideLoading(){
-  document.getElementById("loadingOverlay").style.display="none";
+  document.getElementById("loading").style.display="none";
 }
 
+/* LOGIN */
 function login(){
 
-const user = document.getElementById("user").value.trim();
-const pass = document.getElementById("pass").value.trim();
+  showLoading();
 
-if(user === "" || pass === ""){
-  alert("Sila isi username dan password");
-  return;
+  fetch(API,{
+    method:"POST",
+    headers:{"Content-Type":"text/plain"},
+    body:JSON.stringify({
+      action:"login",
+      user:user.value,
+      pass:pass.value
+    })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+
+    hideLoading();
+
+    if(!res.success){
+      alert("Login gagal");
+      return;
+    }
+
+    sessionStorage.setItem("mds_login","true");
+    window.location.href="dashboard.html";
+
+  })
+  .catch(()=>{
+    hideLoading();
+    alert("Ralat sambungan server");
+  });
 }
 
-showLoading();
-
-fetch(API,{
-method:"POST",
-headers:{"Content-Type":"text/plain"},
-body:JSON.stringify({
-action:"login",
-user:user,
-pass:pass
-})
-})
-.then(r=>r.json())
-.then(res=>{
-
-if(!res.success){
-hideLoading();
-alert("Login gagal");
-return;
-}
-
-sessionStorage.setItem("mds_login","true");
-
-/* delay sikit bagi nampak animasi */
-setTimeout(()=>{
-window.location.href="dashboard.html";
-},1200);
-
-})
-.catch(()=>{
-hideLoading();
-alert("Ralat sambungan server");
-});
-}
-
+/* REPORT PAGE */
 function goReport(){
   window.location.href="report.html";
+}
+
+/* QR PAGE */
+function goQR(){
+  window.location.href="ahli.html";
 }
 
 </script>
