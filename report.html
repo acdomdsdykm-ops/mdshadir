@@ -2,7 +2,7 @@
 <html lang="ms">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Laporan Kehadiran MDS</title>
+<title>MDS Laporan Kehadiran</title>
 
 <style>
 body{
@@ -58,6 +58,7 @@ th{
   background:#f2f2f2;
 }
 
+/* INFO */
 .infoBox{
   background:#fff;
   color:#000;
@@ -93,7 +94,6 @@ th{
   button,.popup{
     display:none !important;
   }
-
   body{
     background:white;
     color:black;
@@ -116,7 +116,7 @@ th{
 
 </div>
 
-<!-- INFO HEADER -->
+<!-- INFO -->
 <div class="infoBox">
 📌 Mesyuarat: <span id="namaMesyuarat">-</span><br>
 📅 Tarikh: <span id="infoTarikh">-</span>
@@ -149,66 +149,71 @@ th{
 
 <script>
 
-const API="https://script.google.com/macros/s/AKfycbxU4E2VRbmRLoV5ipyGIUULA9z8conSE-u7WksOCPrup501XLeWzQEKoLDu8F0G3h2OiA/exec";
+const API = "https://script.google.com/macros/s/AKfycbxU4E2VRbmRLoV5ipyGIUULA9z8conSE-u7WksOCPrup501XLeWzQEKoLDu8F0G3h2OiA/exec";
 
-const popup=document.getElementById("popup");
-const tarikhEl=document.getElementById("tarikh");
+const popup = document.getElementById("popup");
+const tarikhEl = document.getElementById("tarikh");
 
-/* LOAD MESYUARAT */
-fetch(API, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    action: "listMesyuarat",
-    tarikh: tarikhEl.value
-  })
+/* =========================
+   LOAD MESYUARAT
+========================= */
+function loadMesyuarat(){
+
+if(!tarikhEl.value){
+alert("Sila pilih tarikh");
+return;
+}
+
+document.getElementById("infoTarikh").innerText = tarikhEl.value;
+
+fetch(API,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+action:"listMesyuarat",
+tarikh:tarikhEl.value
 })
-.then(res => res.text())
-.then(text => {
-  console.log("RAW RESPONSE:", text);
-
-  let data;
-  try {
-    data = JSON.parse(text);
-  } catch (e) {
-    alert("API bukan JSON valid");
-    return;
-  }
-
-  let list = document.getElementById("list");
-  list.innerHTML = "";
-
-  if (!data || data.length === 0) {
-    list.innerHTML = "<p>Tiada mesyuarat</p>";
-    popup.style.display = "block";
-    return;
-  }
-
-  data.forEach(m => {
-    let btn = document.createElement("button");
-    btn.innerText = m;
-    btn.onclick = () => loadReport(m);
-    list.appendChild(btn);
-  });
-
-  popup.style.display = "block";
 })
-.catch(err => {
-  console.error(err);
-  alert("Ralat load mesyuarat (network/API)");
+.then(r=>r.text())
+.then(text=>{
+
+let data;
+try {
+data = JSON.parse(text);
+} catch(e){
+alert("API tidak valid JSON");
+return;
+}
+
+let list=document.getElementById("list");
+list.innerHTML="";
+
+if(!data || data.length===0){
+list.innerHTML="<p>Tiada mesyuarat</p>";
+popup.style.display="block";
+return;
+}
+
+data.forEach(m=>{
+let btn=document.createElement("button");
+btn.innerText=m;
+btn.onclick=()=>loadReport(m);
+list.appendChild(btn);
 });
+
 popup.style.display="block";
 
 })
-.catch(()=>{
+.catch(err=>{
+console.error(err);
 alert("Ralat load mesyuarat");
 });
 
 }
 
-/* LOAD REPORT */
+/* =========================
+   LOAD REPORT
+========================= */
 function loadReport(mesyuarat){
 
 popup.style.display="none";
@@ -217,21 +222,29 @@ document.getElementById("namaMesyuarat").innerText = mesyuarat;
 
 fetch(API,{
 method:"POST",
-headers:{"Content-Type":"text/plain"},
+headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
 action:"report",
 tarikh:tarikhEl.value,
 mesyuarat:mesyuarat
 })
 })
-.then(r=>r.json())
-.then(data=>{
+.then(r=>r.text())
+.then(text=>{
+
+let data;
+try {
+data = JSON.parse(text);
+} catch(e){
+alert("Report API error");
+return;
+}
 
 let tbody=document.getElementById("tbody");
 tbody.innerHTML="";
 
 if(!data || data.length===0){
-tbody.innerHTML="<tr><td colspan='7'>Tiada data kehadiran</td></tr>";
+tbody.innerHTML="<tr><td colspan='7'>Tiada data</td></tr>";
 return;
 }
 
@@ -250,13 +263,16 @@ tbody.innerHTML += `
 });
 
 })
-.catch(()=>{
+.catch(err=>{
+console.error(err);
 alert("Ralat load report");
 });
 
 }
 
-/* CLOSE POPUP */
+/* =========================
+   CLOSE POPUP
+========================= */
 function closePopup(){
 popup.style.display="none";
 }
