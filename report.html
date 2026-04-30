@@ -162,7 +162,7 @@ th{background:#f2f2f2}
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbzucKxuyCOhB4x4ynOM_ArxmxCSt2Uev_-kpwUaejdk9AQcCj0OFnB8nC_ILD7bIG5Zkw/exec";
+const API = "https://script.google.com/macros/s/AKfycbw08Jzgy8XJY-H0lZE8Kno8_gekBPhqXMQrVUa-L789tIZp0SQ7RbEvhzv0Wt3aAIqRPw/exec";
 
 const popup = document.getElementById("popup");
 
@@ -205,7 +205,7 @@ async function loadMesyuarat(){
 
   showLoading();
 
-  document.getElementById("tarikhInfo").innerText = formatDate(tarikh);
+  document.getElementById("tarikhInfo").innerText = tarikh;
 
   let data = await postAPI({
     action:"listMesyuarat",
