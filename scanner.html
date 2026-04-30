@@ -12,11 +12,14 @@ body{
   background:#022c22;
   color:white;
   text-align:center;
+  margin:0;
 }
+
+h2{margin:10px 0;}
 
 #reader{
   width:320px;
-  margin:15px auto;
+  margin:10px auto;
 }
 
 #statusBox{
@@ -32,6 +35,7 @@ body{
 .success{background:#2563eb;}
 .error{background:#dc2626;}
 
+/* TABLE */
 .table-box{
   margin:15px;
   overflow-x:auto;
@@ -39,15 +43,15 @@ body{
 
 table{
   width:100%;
+  border-collapse:collapse;
   background:white;
   color:black;
-  border-collapse:collapse;
+  font-size:13px;
 }
 
 th,td{
   border:1px solid #ddd;
-  padding:8px;
-  font-size:13px;
+  padding:6px;
 }
 
 th{
@@ -55,12 +59,15 @@ th{
   color:white;
 }
 
+/* STATUS */
 .status-Hadir{color:green;font-weight:bold;}
 .status-Duplicate{color:red;font-weight:bold;}
 
+/* POPUP */
 .popup{
   position:fixed;
-  top:50%;left:50%;
+  top:50%;
+  left:50%;
   transform:translate(-50%,-50%);
   background:white;
   color:black;
@@ -68,6 +75,7 @@ th{
   border-radius:12px;
   opacity:0;
   visibility:hidden;
+  box-shadow:0 10px 30px rgba(0,0,0,0.3);
 }
 .popup.show{
   opacity:1;
@@ -101,7 +109,6 @@ button{
 <tr>
 <th>Nama</th>
 <th>Jawatan</th>
-<th>Bahagian</th>
 <th>Masa</th>
 <th>Status</th>
 </tr>
@@ -111,74 +118,120 @@ button{
 </div>
 
 <div id="popup" class="popup">
-<h3>✔ Berjaya</h3>
+<h3>✔ BERJAYA</h3>
 <p id="pNama"></p>
 <p id="pJawatan"></p>
 </div>
 
 <script>
 
-const API="https://script.google.com/macros/s/AKfycbzgJOMgM_bNE2r_GZlHVL4s8pdaCWLAUs3ZcpU2RVHSbq44QwsJkuP9DT3QoDejkb2UHA/exec";
+const API_URL="YOUR_WEB_APP_URL_HERE";
 
-let data=JSON.parse(sessionStorage.getItem("mds_data")||"{}");
-let scanner,lock=false;
+let scanner;
+let lock=false;
+let sessionKey="";
 const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-function setStatus(t,m){
-statusBox.className=t;
-statusBox.innerText=m;
+/* DATA SESSION */
+let data=JSON.parse(sessionStorage.getItem("mds_data")||"{}");
+
+if(!data.mesyuarat){
+alert("Sila isi maklumat di dashboard");
+window.location.href="dashboard.html";
 }
 
+/* STATUS */
+function setStatus(type,text){
+statusBox.className=type;
+statusBox.innerText=text;
+}
+
+/* SESSION RESET */
+function getSessionKey(){
+return data.mesyuarat+"_"+data.tarikh+"_"+data.masa;
+}
+
+function checkSession(){
+let newKey=getSessionKey();
+if(sessionKey !== newKey){
+sessionKey = newKey;
+tbody.innerHTML="";
+console.log("🔄 Session reset");
+}
+}
+
+/* TIME */
+function nowTime(){
+return new Date().toLocaleTimeString();
+}
+
+/* ADD ROW */
 function addRow(res){
+
 let tr=document.createElement("tr");
 
 tr.innerHTML=`
-<td>${res.nama}</td>
-<td>${res.jawatan}</td>
-<td>${res.bahagian || "-"}</td>
-<td>${res.masa}</td>
-<td class="status-${res.status}">${res.status}</td>
+<td>${res.nama || "-"}</td>
+<td>${res.jawatan || "-"}</td>
+<td>${nowTime()}</td>
+<td class="status-${res.status || "Hadir"}">${res.status || "Hadir"}</td>
 `;
 
 tbody.prepend(tr);
 }
 
+/* START SCAN */
 function startQR(){
 
 scanner=new Html5Qrcode("reader");
 
-scanner.start({facingMode:"environment"},{fps:10,qrbox:250},text=>{
+scanner.start(
+{facingMode:"environment"},
+{fps:10,qrbox:250},
+text=>{
 
+/* VALIDATION */
 if(lock) return;
 lock=true;
 
-setStatus("processing","🟡 Proses...");
+if(!text || text.length < 3){
+setStatus("error","❌ QR tidak sah");
+lock=false;
+return;
+}
+
+setStatus("processing","🟡 Memproses...");
 
 scanner.stop().catch(()=>{});
 
-fetch(API,{
+fetch(API_URL,{
 method:"POST",
+headers:{"Content-Type":"text/plain"},
 body:JSON.stringify({
-nama:text,
-jawatan:"-",
-bahagian:"-",
+id:text,
+mesyuarat:data.mesyuarat,
 tarikh:data.tarikh,
-mesyuarat:data.mesyuarat
+masa:data.masa
 })
 })
-.then(r=>r.json())
+.then(async r=>{
+let res=await r.json();
+return res;
+})
 .then(res=>{
+
+checkSession();
 
 beep.play();
 
-pNama.innerHTML=res.nama;
-pJawatan.innerHTML=res.jawatan;
+pNama.innerHTML="<b>"+res.nama+"</b>";
+pJawatan.innerHTML="<b>"+res.jawatan+"</b>";
 
 popup.classList.add("show");
 
 addRow(res);
 
-setStatus("success","🔵 OK");
+setStatus("success","🔵 Berjaya");
 
 setTimeout(()=>{
 popup.classList.remove("show");
@@ -188,8 +241,9 @@ startQR();
 },1200);
 
 })
-.catch(()=>{
-setStatus("error","❌ Error");
+.catch(err=>{
+console.log("API ERROR:",err);
+setStatus("error","❌ Error API");
 lock=false;
 startQR();
 });
