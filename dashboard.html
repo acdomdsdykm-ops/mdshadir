@@ -2,77 +2,137 @@
 <html lang="ms">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Dashboard MDS</title>
 
+<!-- FONT -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&family=Orbitron:wght@500&display=swap" rel="stylesheet">
+
 <style>
+
 body{
-  font-family:Arial;
+  font-family:'Poppins', Arial;
   background:linear-gradient(135deg,#064e3b,#022c22);
   color:white;
   text-align:center;
   margin:0;
 }
 
+/* HEADER */
+.header{
+  padding:20px;
+}
+
+.header h2{
+  margin-bottom:10px;
+}
+
+/* CLOCK BOX */
+.time-box{
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(10px);
+  margin:10px auto 20px;
+  padding:20px;
+  border-radius:16px;
+  width:260px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
+
+.time{
+  font-family:'Orbitron', sans-serif;
+  font-size:36px;
+  letter-spacing:2px;
+}
+
+.date{
+  font-size:14px;
+  opacity:0.85;
+  margin-top:5px;
+}
+
+/* MAIN BOX */
 .box{
   background:white;
   color:black;
-  margin:40px auto;
+  margin:20px auto;
   padding:20px;
-  border-radius:12px;
-  width:320px;
+  border-radius:16px;
+  width:340px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.25);
 }
 
+/* INPUT */
 input,select{
   width:90%;
   padding:10px;
   margin:8px;
   border-radius:8px;
   border:1px solid #ccc;
+  font-family:'Poppins';
 }
 
+/* BUTTON */
 button{
   padding:12px;
   width:95%;
   background:#16a34a;
   color:white;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
   cursor:pointer;
+  font-weight:600;
+  transition:0.2s;
 }
 
+button:hover{
+  background:#15803d;
+}
+
+button:disabled{
+  background:grey;
+}
+
+/* INFO BOX */
 .info{
   background:#f3f3f3;
-  padding:10px;
-  border-radius:8px;
+  padding:12px;
+  border-radius:10px;
   margin-top:10px;
   font-size:13px;
   text-align:left;
+  line-height:1.6;
 }
+
 </style>
 </head>
 
 <body>
 
-<h2>🏢 Dashboard MDS</h2>
+<div class="header">
+  <h2>🏢 Dashboard MDS</h2>
+
+  <div class="time-box">
+    <div class="time" id="time">00:00:00</div>
+    <div class="date" id="date">Loading...</div>
+  </div>
+</div>
 
 <div class="box">
 
 <label>📅 Tarikh</label><br>
-<input type="date" id="tarikh"><br>
+<input type="date" id="tarikh" onchange="updateInfo()"><br>
 
 <label>📌 Mesyuarat</label><br>
-<select id="mesyuarat"></select>
+<select id="mesyuarat" onchange="updateInfo()"></select>
 
-<!-- ⏰ MASA MANUAL -->
 <label>⏰ Masa Mula</label><br>
-<input type="time" id="mula"><br>
+<input type="time" id="mula" onchange="updateInfo()"><br>
 
 <label>⏰ Masa Tamat</label><br>
-<input type="time" id="tamat"><br>
+<input type="time" id="tamat" onchange="updateInfo()"><br>
 
-<!-- 📍 TEMPAT -->
 <label>📍 Tempat</label><br>
-<select id="tempat">
+<select id="tempat" onchange="updateInfo()">
 <option>Dewan Pejabat Majlis Daerah Simunjan</option>
 <option>Dewan Setia</option>
 <option>Dewan Mesra</option>
@@ -84,15 +144,13 @@ button{
 Sila lengkapkan maklumat mesyuarat
 </div>
 
-<button onclick="start()">🚀 Mula Scanner</button>
+<button id="startBtn" onclick="start()">🚀 Mula Scanner</button>
 
 </div>
 
 <script>
 
-/* =========================
-   SENARAI MESYUARAT
-========================= */
+/* SENARAI MESYUARAT */
 const list = [
 "Bil.1/2026 - Taklimat Pengurusan",
 "Bil.2/2026 - Mesyuarat Jawatankuasa",
@@ -113,6 +171,73 @@ let opt = document.createElement("option");
 opt.textContent = m;
 s.appendChild(opt);
 });
+
+/* AUTO TARIKH */
+document.getElementById("tarikh").valueAsDate = new Date();
+
+/* LOAD LAST DATA */
+let last = localStorage.getItem("mds_last");
+if(last){
+  let d = JSON.parse(last);
+  document.getElementById("mesyuarat").value = d.mesyuarat || "";
+  document.getElementById("mula").value = d.mula || "";
+  document.getElementById("tamat").value = d.tamat || "";
+  document.getElementById("tempat").value = d.tempat || "";
+}
+
+updateInfo();
+}
+
+/* CLOCK LIVE */
+function clock(){
+const now = new Date();
+
+const time = now.toLocaleTimeString("en-GB",{hour12:false});
+
+const date = now.toLocaleDateString("ms-MY",{
+  weekday:'long',
+  day:'numeric',
+  month:'long',
+  year:'numeric'
+});
+
+document.getElementById("time").innerText = time;
+document.getElementById("date").innerText = date;
+}
+
+setInterval(clock,1000);
+clock();
+
+/* FORMAT TARIKH */
+function formatDateDDMMYYYY(dateStr){
+let d = new Date(dateStr);
+let day = String(d.getDate()).padStart(2,'0');
+let month = String(d.getMonth()+1).padStart(2,'0');
+let year = d.getFullYear();
+return day + month + year;
+}
+
+/* UPDATE INFO */
+function updateInfo(){
+
+const tarikh = document.getElementById("tarikh").value;
+const mesyuarat = document.getElementById("mesyuarat").value;
+const mula = document.getElementById("mula").value;
+const tamat = document.getElementById("tamat").value;
+const tempat = document.getElementById("tempat").value;
+
+if(!tarikh || !mesyuarat || !mula || !tamat){
+document.getElementById("info").innerHTML =
+"Sila lengkapkan maklumat mesyuarat";
+return;
+}
+
+document.getElementById("info").innerHTML = `
+<b>Tarikh:</b> ${tarikh}<br>
+<b>Mesyuarat:</b> ${mesyuarat}<br>
+<b>Masa:</b> ${mula} - ${tamat}<br>
+<b>Tempat:</b> ${tempat}
+`;
 }
 
 /* START */
@@ -129,36 +254,39 @@ alert("Sila lengkapkan semua maklumat");
 return;
 }
 
-/* VALIDASI MASA */
-if(mula >= tamat){
+/* VALID MASA */
+const startTime = new Date(`1970-01-01T${mula}:00`);
+const endTime = new Date(`1970-01-01T${tamat}:00`);
+
+if(startTime >= endTime){
 alert("Masa tamat mesti lebih lewat dari masa mula");
 return;
 }
 
-/* SIMPAN SESSION */
-sessionStorage.setItem("mds_data", JSON.stringify({
-  tarikh: tarikh,
-  mesyuarat: mesyuarat,
-  mula: mula,
-  tamat: tamat,
-  tempat: tempat
-}));
+/* DISABLE BUTTON */
+let btn = document.getElementById("startBtn");
+btn.disabled = true;
+btn.innerText = "Loading...";
 
-window.location.href="scanner.html";
+/* FORMAT */
+const tarikhFormat = formatDateDDMMYYYY(tarikh);
 
-}
+/* DATA */
+const data = {
+tarikh,
+tarikhFormat,
+mesyuarat,
+mula,
+tamat,
+tempat
+};
 
-function formatDateDDMMYYYY(dateStr){
+/* SIMPAN */
+sessionStorage.setItem("mds_data", JSON.stringify(data));
+localStorage.setItem("mds_last", JSON.stringify(data));
 
-  if(!dateStr) return "";
-
-  let d = new Date(dateStr);
-
-  let day = String(d.getDate()).padStart(2,'0');
-  let month = String(d.getMonth()+1).padStart(2,'0');
-  let year = d.getFullYear();
-
-  return day + month + year; // DDMMYYYY
+/* REDIRECT */
+window.location.href = "scanner.html";
 }
 
 /* INIT */
