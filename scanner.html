@@ -235,50 +235,37 @@ function onScan(text){
   }
 
   fetch(API,{
-    method:"POST",
-    body:new URLSearchParams({
-      action:"scan",
-      nama: qrData,
-      jawatan:"-",
-      bahagian:"-",
-      tarikh:data.tarikh,
-      mesyuarat:data.mesyuarat
-    })
+  method:"POST",
+  body:new URLSearchParams({
+    action:"scan",
+    nama: qrData,
+    tarikh: data.tarikh,
+    mesyuarat: data.mesyuarat
   })
-  .then(r=>r.json())
-  .then(res=>{
+})
+.then(r=>r.json())
+.then(res=>{
 
-    if(res.status==="error"){
-      setStatus("error","❌ "+res.message);
-      lock=false;
-      return;
-    }
+  if(!res.ok){
+    setStatus("error","❌ "+res.message);
+    lock = false;
+    restart();
+    return;
+  }
 
-    markScanned(qrData);
-    beep.play();
+  const d = res.data;
 
-    document.getElementById("pNama").innerText = res.nama;
-    document.getElementById("pJawatan").innerText = res.jawatan;
+  document.getElementById("pNama").innerText = d.nama || "-";
+  document.getElementById("pJawatan").innerText = d.jawatan || "-";
 
-    document.getElementById("popup").classList.add("show");
+  document.getElementById("popup").classList.add("show");
 
-    addRow(res);
+  setStatus("success","✔ Berjaya");
 
-    setStatus("success","✔ Berjaya");
-
-    setTimeout(()=>{
-      document.getElementById("popup").classList.remove("show");
-      setStatus("ready","🟢 Sedia scan");
-      lock=false;
-    },1200);
-
-  })
-  .catch(()=>{
-    setStatus("error","❌ Server error");
-    lock=false;
-  });
-
-}
+})
+.catch(err=>{
+  setStatus("error","❌ Server error");
+});
 
 /* START SCANNER */
 function startScanner(){
