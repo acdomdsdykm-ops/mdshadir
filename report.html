@@ -220,16 +220,14 @@ th{background:#f2f2f2}
   <br><br>
 
 <div style="text-align:right;font-size:12px;">
-  <p><b>Disediakan oleh:</b> MDS Attendance Digital System</p>
-  <p><b>Dicetak oleh:</b> <span id=""user""></span></p>
+  <p><b>Disediakan oleh:</b> MDS Digital Attendance System</p>
 <p><b>Tarikh cetakan:</b> <span id="printTime"></span></p>
 </div>
 
 <br>
 
 <div style="text-align:center;font-size:11px;margin-top:10px;">
-  <p><b>Ini adalah cetakan komputer dan tidak memerlukan tandatangan.</p>
-  <p><b>Sistem Kehadiran Digital Majlis Daerah Simunjan @ 2026</span></p>
+  Ini adalah cetakan komputer dan tidak memerlukan tandatangan.
 </div>
 
   </div>
@@ -367,7 +365,7 @@ async function downloadPDF(){
 
   try{
 
-    let data = await postAPI({
+    let data = await postAPI({ 
       action:"report",
       tarikh:tarikh,
       mesyuarat:mesyuarat
