@@ -18,9 +18,10 @@ body{
   align-items:center;
 }
 
+/* CONTAINER */
 .card{ width:370px; }
 
-/* HEADER */
+/* ================= HEADER ================= */
 .card-header{
   background:rgba(255,255,255,0.08);
   backdrop-filter:blur(18px);
@@ -33,7 +34,7 @@ body{
 }
 
 .logo{
-  width:70px;
+  width:65px;
   margin-bottom:6px;
   filter:brightness(0) invert(1);
 }
@@ -64,7 +65,7 @@ body{
   cursor:pointer;
 }
 
-/* ================= ID CARD ================= */
+/* ================= CARD ================= */
 .id-card{
   margin-top:18px;
   padding:22px;
@@ -74,14 +75,14 @@ body{
   overflow:hidden;
 
   box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.4),
+    inset 0 0 0 1px rgba(255,255,255,0.35),
     inset 0 0 25px rgba(0,0,0,0.25),
     0 25px 60px rgba(0,0,0,0.5);
 
   display:none;
   opacity:0;
-  transform:translateY(10px);
-  transition:0.4s ease;
+  transform:translateY(12px);
+  transition:0.45s ease;
 }
 
 .id-card.show{
@@ -89,7 +90,7 @@ body{
   transform:translateY(0);
 }
 
-/* WATERMARK */
+/* WATERMARK LOGO */
 .id-card::before{
   content:"";
   position:absolute;
@@ -97,26 +98,26 @@ body{
   height:320px;
   background:url('mds.png') no-repeat center;
   background-size:contain;
-  opacity:0.08;
+  opacity:0.07;
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
   pointer-events:none;
 }
 
-/* HOLOGRAM SOFT */
+/* HOLOGRAM MYKAD STYLE */
 .id-card::after{
   content:"";
   position:absolute;
-  top:-80%;
+  top:-90%;
   left:-50%;
   width:90%;
   height:280%;
   background:linear-gradient(
     120deg,
     transparent 0%,
-    rgba(255,0,255,0.12) 20%,
-    rgba(0,255,255,0.18) 45%,
+    rgba(255,0,255,0.12) 18%,
+    rgba(0,255,255,0.18) 40%,
     rgba(255,255,0,0.16) 60%,
     rgba(0,255,150,0.18) 80%,
     transparent 100%
@@ -131,21 +132,12 @@ body{
   100%{transform:translateX(260%) rotate(25deg);}
 }
 
-/* LOGO */
-.id-card-logo-wrap{
-  width:75px;
-  height:75px;
-  background:#fff;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+/* LOGO DIRECT (NO CIRCLE) */
+.id-card-logo{
+  width:52px;
+  display:block;
   margin:0 auto 10px auto;
-  box-shadow:0 10px 18px rgba(0,0,0,0.25);
-}
-
-.id-card-logo-wrap img{
-  width:48px;
+  filter:brightness(0) invert(1);
 }
 
 /* TITLE */
@@ -196,7 +188,6 @@ body{
 .bottom-row{
   display:flex;
   gap:12px;
-  align-items:flex-start;
 }
 
 .qr-box{
@@ -284,6 +275,7 @@ body{
 
 <div class="card">
 
+  <!-- HEADER -->
   <div class="card-header">
 
     <img src="mds.png" class="logo">
@@ -299,11 +291,10 @@ body{
 
   </div>
 
+  <!-- ID CARD -->
   <div class="id-card" id="idCard">
 
-    <div class="id-card-logo-wrap">
-      <img src="mds.png">
-    </div>
+    <img src="mds.png" class="id-card-logo">
 
     <div class="title-wrap">
       <div class="org-name">MAJLIS DAERAH SIMUNJAN</div>
