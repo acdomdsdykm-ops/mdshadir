@@ -8,6 +8,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
+:root{
+  --primary:#064e3b;
+  --primary-dark:#022c22;
+  --card:#ffffff;
+  --shadow:0 10px 35px rgba(0,0,0,.18);
+}
+
+*{box-sizing:border-box}
 
 body{
   font-family:Arial;
@@ -18,48 +26,98 @@ body{
   text-align:center;
 }
 
-/* BOX */
+.page-wrap{max-width:980px;margin:0 auto;}
+
+.header{
+  background:rgba(255,255,255,.08);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:16px 22px;
+  margin-bottom:18px;
+  box-shadow:var(--shadow);
+}
+
+.header-top{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  flex-wrap:wrap;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:14px;
+  text-align:left;
+}
+
+.brand img{
+  width:58px;
+  height:58px;
+  object-fit:contain;
+  background:#fff;
+  border-radius:12px;
+  padding:6px;
+}
+
+.brand h1{margin:0;font-size:22px;}
+.brand p{margin:2px 0 0;font-size:13px;opacity:.9;}
+
+.userbar{
+  text-align:right;
+  font-size:14px;
+  background:rgba(255,255,255,.08);
+  padding:10px 14px;
+  border-radius:12px;
+}
+
+h2{margin:14px 0 0;}
+
 .box{
   background:white;
   color:black;
-  padding:15px;
-  margin:10px auto;
-  border-radius:12px;
+  padding:18px;
+  margin:12px auto;
+  border-radius:16px;
   max-width:900px;
+  box-shadow:var(--shadow);
 }
 
-/* INPUT */
 input{
   padding:10px;
   border-radius:8px;
   border:1px solid #ccc;
 }
 
-/* BUTTON */
 button{
   padding:10px 15px;
   border:none;
-  border-radius:8px;
+  border-radius:10px;
   background:#3498db;
   color:white;
   cursor:pointer;
   margin:5px;
+  font-weight:bold;
+  transition:.2s ease;
 }
 
-button:hover{opacity:0.85}
+button:hover{opacity:.9;transform:translateY(-1px);}
 
-/* INFO */
 .info{
   background:white;
   color:black;
-  padding:10px;
-  border-radius:10px;
-  margin:10px auto;
+  padding:14px;
+  border-radius:14px;
+  margin:12px auto;
   font-weight:bold;
   max-width:900px;
+  box-shadow:var(--shadow);
 }
 
-/* TABLE */
+.table-wrap{overflow:auto;border-radius:12px;}
+
 table{
   width:100%;
   border-collapse:collapse;
@@ -74,9 +132,8 @@ th,td{
   text-align:left;
 }
 
-th{background:#f2f2f2}
+th{background:#f2f2f2;}
 
-/* POPUP */
 .popup{
   position:fixed;
   top:50%;
@@ -86,12 +143,12 @@ th{background:#f2f2f2}
   color:black;
   padding:20px;
   width:320px;
-  border-radius:10px;
+  border-radius:14px;
   display:none;
   z-index:2000;
+  box-shadow:0 15px 40px rgba(0,0,0,.35);
 }
 
-/* LOADING */
 #loading{
   position:fixed;
   top:0;left:0;
@@ -114,16 +171,31 @@ th{background:#f2f2f2}
   animation:spin 1s linear infinite;
 }
 
-@keyframes spin{
-  100%{transform:rotate(360deg);}
-}
-
+@keyframes spin{100%{transform:rotate(360deg);}}
 </style>
 </head>
 
 <body>
+<div class="page-wrap">
 
-<h2>📄 MDS Report System</h2>
+<div class="header">
+  <div class="header-top">
+    <div class="brand">
+      <img src="mds.png" alt="MDS Logo">
+      <div>
+        <h1>Majlis Daerah Simunjan</h1>
+        <p>Sistem Laporan Kehadiran Mesyuarat / Program</p>
+      </div>
+    </div>
+
+    <div class="userbar">
+      Selamat datang, <b>User1</b><br>
+      Role - <b>User</b>
+    </div>
+  </div>
+
+  <h2>📄 MDS Report System</h2>
+</div>
 
 <div class="box">
   <label>Tarikh:</label><br>
@@ -139,6 +211,7 @@ th{background:#f2f2f2}
 </div>
 
 <div class="box">
+<div class="table-wrap">
 <table>
 <thead>
 <tr>
@@ -154,50 +227,33 @@ th{background:#f2f2f2}
 <tbody id="tbody"></tbody>
 </table>
 </div>
+</div>
 
-<!-- POPUP MESYUARAT -->
 <div id="popup" class="popup">
 <h3>Pilih Mesyuarat</h3>
 <div id="list"></div>
 <button onclick="closePopup()">Tutup</button>
 </div>
 
-<!-- LOADING -->
 <div id="loading">
   <div class="spinner"></div>
   <div>Sila tunggu sebentar...</div>
 </div>
 
-<!-- PDF TEMPLATE -->
 <div id="pdfArea" style="display:none;background:white;color:black;padding:20px;font-family:Arial;">
-
-  <!-- HEADER LETTERHEAD -->
   <div style="text-align:center;border-bottom:2px solid #000;padding-bottom:10px;margin-bottom:15px;">
-
     <img src="mds.png" style="width:80px;margin-bottom:5px;">
-
-    <h2 style="margin:0;font-size:18px;">
-      MAJLIS DAERAH SIMUNJAN
-    </h2>
-
-    <p style="margin:3px 0;font-size:12px;">
-      Lot 805, Gunong Ngeli New Service Centre, 94800 Simunjan, Sarawak.
-    </p>
-
+    <h2 style="margin:0;font-size:18px;">MAJLIS DAERAH SIMUNJAN</h2>
+    <p style="margin:3px 0;font-size:12px;">Lot 805, Gunong Ngeli New Service Centre, 94800 Simunjan, Sarawak.</p>
   </div>
 
-  <!-- TITLE REPORT -->
-  <h3 style="text-align:center;margin:10px 0;">
-    LAPORAN KEHADIRAN MESYUARAT / PROGRAM
-  </h3>
+  <h3 style="text-align:center;margin:10px 0;">LAPORAN KEHADIRAN MESYUARAT / PROGRAM</h3>
 
-  <!-- INFO -->
   <div style="font-size:13px;margin-bottom:10px;line-height:1.6;">
     <b>Nama Mesyuarat:</b> <span id="pdfMesyuarat"></span><br>
     <b>Tarikh:</b> <span id="pdfTarikh"></span>
   </div>
 
-  <!-- TABLE -->
   <table style="width:100%;border-collapse:collapse;font-size:12px;">
     <thead>
       <tr style="background:#f2f2f2;">
@@ -212,64 +268,43 @@ th{background:#f2f2f2}
     <tbody id="pdfTable"></tbody>
   </table>
 
-  <!-- JUMLAH HADIR -->
   <div style="margin-top:10px;font-size:13px;">
     <b>Jumlah Kehadiran:</b> <span id="totalHadir"></span> orang
   </div>
 
   <br><br>
 
-<div style="text-align:right;font-size:12px;">
-  <p><b>Disediakan oleh:</b> MDS Digital Attendance System</p>
-<p><b>Tarikh cetakan:</b> <span id="printTime"></span></p>
-</div>
-
-<br>
-
-<div style="text-align:center;font-size:11px;margin-top:10px;">
-  Ini adalah cetakan komputer dan tidak memerlukan tandatangan.
-</div>
-
+  <div style="text-align:right;font-size:12px;">
+    <p><b>Disediakan oleh:</b> MDS Digital Attendance System</p>
+    <p><b>Tarikh cetakan:</b> <span id="printTime"></span></p>
   </div>
+
+  <br>
+
+  <div style="text-align:center;font-size:11px;margin-top:10px;">
+    Ini adalah cetakan komputer dan tidak memerlukan tandatangan.
+  </div>
+</div>
 
 </div>
 
 <script>
-
 const API = "https://script.google.com/macros/s/AKfycbyDT5us9Ejtgm75w3GACN9MzyhGZAZGa4Oa4gn06vfMjjyOta9oZoFINT_TbKoAoNsaXA/exec";
-
 const popup = document.getElementById("popup");
 
-function showLoading(){
-  document.getElementById("loading").style.display="flex";
-}
-
-function hideLoading(){
-  document.getElementById("loading").style.display="none";
-}
+function showLoading(){ document.getElementById("loading").style.display="flex"; }
+function hideLoading(){ document.getElementById("loading").style.display="none"; }
 
 async function postAPI(payload){
-  let res = await fetch(API,{
-    method:"POST",
-    headers:{"Content-Type":"application/x-www-form-urlencoded"},
-    body:new URLSearchParams(payload)
-  });
+  let res = await fetch(API,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams(payload)});
   return await res.json();
 }
 
-/* LOAD MESYUARAT */
 async function loadMesyuarat(){
-
   let tarikh = document.getElementById("tarikh").value;
   if(!tarikh){ alert("Pilih tarikh"); return; }
-
   showLoading();
-
-  let data = await postAPI({
-    action:"listMesyuarat",
-    tarikh:tarikh
-  });
-
+  let data = await postAPI({action:"listMesyuarat",tarikh:tarikh});
   hideLoading();
 
   let list = document.getElementById("list");
@@ -291,29 +326,18 @@ async function loadMesyuarat(){
   popup.style.display="block";
 }
 
-function closePopup(){
-  popup.style.display="none";
-}
+function closePopup(){ popup.style.display="none"; }
 
-/* REPORT */
 async function loadReport(m){
-
   popup.style.display="none";
   showLoading();
 
   document.getElementById("mesyuarat").innerText = m;
   let tarikh = document.getElementById("tarikh").value;
+  document.getElementById("tarikhInfo").innerText = tarikh;
 
-  let res = await postAPI({
-    action:"report",
-    tarikh:tarikh,
-    mesyuarat:m
-  });
-
+  let res = await postAPI({action:"report",tarikh:tarikh,mesyuarat:m});
   hideLoading();
-
-  // 🔥 FIX UTAMA
-  let data = Array.isArray(res) ? res : [];
 
   if(res.status === "error"){
     alert(res.message || "Ralat data");
@@ -344,15 +368,11 @@ async function loadReport(m){
         <td>${r.tarikh || "-"}</td>
         <td>${r.masa || "-"}</td>
         <td>${r.status || "-"}</td>
-      </tr>
-    `;
+      </tr>`;
   });
-
 }
 
-/* PDF GENERATE */
 async function downloadPDF(){
-
   let tarikh = document.getElementById("tarikh").value;
   let mesyuarat = document.getElementById("mesyuarat").innerText;
 
@@ -364,25 +384,18 @@ async function downloadPDF(){
   showLoading();
 
   try{
-
-    let data = await postAPI({ 
-      action:"report",
-      tarikh:tarikh,
-      mesyuarat:mesyuarat
-    });
-
-    // ❗ tunggu render dulu (INI PENTING)
+    let data = await postAPI({action:"report",tarikh:tarikh,mesyuarat:mesyuarat});
     await new Promise(r => setTimeout(r, 300));
 
     document.getElementById("pdfMesyuarat").innerText = mesyuarat;
     document.getElementById("pdfTarikh").innerText = tarikh;
+    document.getElementById("printTime").innerText = new Date().toLocaleString('ms-MY');
 
     let html = "";
     let count = 0;
 
     data.forEach((r,i)=>{
       count++;
-
       html += `
         <tr>
           <td style="border:1px solid #000;padding:6px;">${i+1}</td>
@@ -391,31 +404,25 @@ async function downloadPDF(){
           <td style="border:1px solid #000;padding:6px;">${r.bahagian || "-"}</td>
           <td style="border:1px solid #000;padding:6px;">${r.masa || "-"}</td>
           <td style="border:1px solid #000;padding:6px;">${r.status || "-"}</td>
-        </tr>
-      `;
+        </tr>`;
     });
 
     document.getElementById("pdfTable").innerHTML = html;
     document.getElementById("totalHadir").innerText = count;
 
-    // 🔥 PENTING: paksa visible sebelum export
     const pdfArea = document.getElementById("pdfArea");
     pdfArea.style.display = "block";
 
     await new Promise(r => setTimeout(r, 500));
 
-    await html2pdf()
-      .set({
-        margin:10,
-        filename:"Laporan_MDS.pdf",
-        image:{type:"jpeg",quality:0.98},
-        html2canvas:{scale:2,useCORS:true},
-        jsPDF:{format:"a4",orientation:"portrait"}
-      })
-      .from(pdfArea)
-      .outputPdf("dataurlnewwindow");
+    await html2pdf().set({
+      margin:10,
+      filename:"Laporan_MDS.pdf",
+      image:{type:"jpeg",quality:0.98},
+      html2canvas:{scale:2,useCORS:true},
+      jsPDF:{format:"a4",orientation:"portrait"}
+    }).from(pdfArea).outputPdf("dataurlnewwindow");
 
-    // optional hide balik
     pdfArea.style.display = "none";
 
   }catch(err){
@@ -425,7 +432,6 @@ async function downloadPDF(){
     hideLoading();
   }
 }
-
 </script>
 
 </body>
