@@ -15,12 +15,7 @@ body{
   margin:0;
 }
 
-/* HEADER */
-h2{
-  margin-top:10px;
-}
-
-/* INFO */
+/* INFO BOX */
 .info{
   background:white;
   color:black;
@@ -30,6 +25,7 @@ h2{
   border-radius:12px;
   font-size:13px;
   text-align:left;
+  line-height:1.6;
 }
 
 /* SCANNER */
@@ -87,15 +83,13 @@ th{
   border-radius:12px;
   opacity:0;
   visibility:hidden;
-  transition:0.2s;
+  transition:0.3s;
 }
-
 .popup.show{
   opacity:1;
   visibility:visible;
 }
 
-/* BUTTON */
 button{
   background:red;
   color:white;
@@ -103,7 +97,6 @@ button{
   border:none;
   border-radius:8px;
   margin-top:10px;
-  cursor:pointer;
 }
 </style>
 </head>
@@ -112,10 +105,7 @@ button{
 
 <h2>📷 Scanner Kehadiran MDS</h2>
 
-<div class="info">
-📌 Sistem Kehadiran Digital MDS<br>
-✔ Scan QR untuk rekod kehadiran
-</div>
+<div class="info" id="infoBox">Loading info...</div>
 
 <div id="statusBox" class="ready">🟢 Sedia scan</div>
 
@@ -140,69 +130,90 @@ button{
 
 <div id="popup" class="popup">
 <h3 style="color:green;">✔ Berjaya</h3>
-<p id="pNama"></p>
-<p id="pJawatan"></p>
+<p id="pNama" style="font-weight:bold;"></p>
+<p id="pJawatan" style="font-weight:bold;"></p>
 </div>
 
 <script>
 
-/* =========================
-   API URL (PASTE WEB APP)
-========================= */
-const API = "https://script.google.com/macros/s/AKfycbyFX_b2V2UIU82i97nYoPnqKrL-Dq-nOl0hjXJYra_PX3KFN2ogOaQPweMtJIKahorujA/exec";
+const API = "https://script.google.com/macros/s/AKfycbyIchlFajTUl6XoMQtTDgQbRDVTeCYlxRyCsIkb-U051w4b9MNbDwrqMovgraCYhakjbA/exec";
 
-/* =========================
-   ELEMENT
-========================= */
+let data = JSON.parse(sessionStorage.getItem("mds_data") || "{}");
+
 let scanner;
 let lock = false;
+
+const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
 const statusBox = document.getElementById("statusBox");
 const tbody = document.getElementById("tbody");
 const popup = document.getElementById("popup");
 const pNama = document.getElementById("pNama");
 const pJawatan = document.getElementById("pJawatan");
+const infoBox = document.getElementById("infoBox");
 
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+/* ================= CHECK SESSION ================= */
+if(!data.mesyuarat){
+  alert("Tiada data mesyuarat");
+  window.location.href="dashboard.html";
+}
 
-/* =========================
-   STATUS UI
-========================= */
+/* ================= INFO ================= */
+infoBox.innerHTML = `
+<b>📌 Nama Mesyuarat:</b> ${data.mesyuarat}<br>
+📅 <b>Tarikh:</b> ${data.tarikh}<br>
+⏰ <b>Masa:</b> ${data.mula} - ${data.tamat}<br>
+📍 <b>Tempat:</b> ${data.tempat}
+`;
+
+/* ================= ANTI DOUBLE SCAN ================= */
+function scanKey(id){
+  return `mds_${id}_${data.tarikh}_${data.mesyuarat}`;
+}
+
+function alreadyScanned(id){
+  return localStorage.getItem(scanKey(id));
+}
+
+function markScanned(id){
+  localStorage.setItem(scanKey(id),"1");
+}
+
+/* ================= STATUS ================= */
 function setStatus(type,msg){
   statusBox.className = type;
   statusBox.innerText = msg;
 }
 
-/* =========================
-   TABLE ROW
-========================= */
+/* ================= TABLE ================= */
 function addRow(res){
-
   let tr = document.createElement("tr");
 
   tr.innerHTML = `
-    <td><b>${res.nama}</b></td>
-    <td>${res.jawatan}</td>
-    <td>${res.bahagian || "-"}</td>
-    <td>${res.masa}</td>
-    <td>Hadir</td>
+  <td><b>${res.nama}</b></td>
+  <td><b>${res.jawatan}</b></td>
+  <td>${res.bahagian || "-"}</td>
+  <td>${res.masa}</td>
+  <td>${res.status}</td>
   `;
 
   tbody.prepend(tr);
 }
 
-/* =========================
-   START SCANNER
-========================= */
+/* ================= SAFE RESTART ================= */
+function restart(){
+  setTimeout(startQR, 600);
+}
+
+/* ================= QR SCANNER ================= */
 function startQR(){
 
   scanner = new Html5Qrcode("reader");
 
   scanner.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: 250 },
-
-    async (text) => {
+    { facingMode:"environment" },
+    { fps:10, qrbox:250 },
+    text => {
 
       if(lock) return;
       lock = true;
@@ -211,40 +222,45 @@ function startQR(){
 
       scanner.stop().catch(()=>{});
 
-      try{
+      if(alreadyScanned(text)){
+        setStatus("error","⚠ Sudah scan");
+        lock=false;
+        restart();
+        return;
+      }
 
-        const res = await fetch(API,{
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json"
-          },
-          body: JSON.stringify({
-            action: "scan",
-            nama: text,
-            jawatan: "-",
-            bahagian: "-",
-            tarikh: "",
-            mesyuarat: ""
-          })
-        });
+      fetch(API,{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          nama:text,
+          jawatan:"-",
+          bahagian:"-",
+          tarikh:data.tarikh,
+          mesyuarat:data.mesyuarat
+        })
+      })
+      .then(r=>r.json())
+      .then(res=>{
 
-        const data = await res.json();
-
-        if(data.status === "error"){
-          setStatus("error","❌ "+data.message);
+        if(res.status === "error"){
+          setStatus("error","❌ "+res.message);
           lock=false;
-          setTimeout(startQR,800);
+          restart();
           return;
         }
 
+        markScanned(text);
         beep.play();
 
-        pNama.innerText = data.nama;
-        pJawatan.innerText = data.jawatan;
+        pNama.innerText = res.nama;
+        pJawatan.innerText = res.jawatan;
 
         popup.classList.add("show");
 
-        addRow(data);
+        addRow(res);
 
         setStatus("success","✔ Berjaya");
 
@@ -252,32 +268,26 @@ function startQR(){
           popup.classList.remove("show");
           lock=false;
           setStatus("ready","🟢 Sedia scan");
-          setTimeout(startQR,500);
+          restart();
         },1200);
 
-      }catch(err){
+      })
+      .catch(err=>{
         console.log(err);
         setStatus("error","❌ Server error");
         lock=false;
-        setTimeout(startQR,1000);
-      }
+        restart();
+      });
 
     }
-
   );
-
 }
 
-/* =========================
-   BACK BUTTON
-========================= */
+/* ================= BACK ================= */
 function back(){
   window.location.href="dashboard.html";
 }
 
-/* =========================
-   INIT
-========================= */
 startQR();
 
 </script>
