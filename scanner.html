@@ -2,68 +2,22 @@
 <html lang="ms">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scanner Kehadiran MDS</title>
+<title>Scanner Kehadiran</title>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 
-<!-- FONT -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-
 <style>
-
 body{
-  font-family:'Poppins', Arial;
+  font-family:Arial;
+  margin:0;
+  text-align:center;
   background:linear-gradient(135deg,#022c22,#064e3b);
   color:white;
-  text-align:center;
-  margin:0;
 }
 
-/* HEADER */
-h2{
-  margin-top:15px;
-}
-
-/* INFO CARD */
-.info{
-  background:white;
-  color:black;
-  margin:10px auto;
-  padding:15px;
-  width:340px;
-  border-radius:14px;
-  font-size:13px;
-  text-align:left;
-  line-height:1.6;
-  box-shadow:0 8px 20px rgba(0,0,0,0.3);
-}
-
-/* STATUS */
-#statusBox{
-  width:300px;
-  margin:10px auto;
-  padding:12px;
-  border-radius:10px;
-  font-weight:bold;
-}
-
-.ready{background:#16a34a;}
-.processing{background:#f59e0b;}
-.success{background:#2563eb;}
-.error{background:#dc2626;}
-
-/* SCANNER */
 #reader{
   width:320px;
-  margin:10px auto;
-  border-radius:12px;
-  overflow:hidden;
-}
-
-/* TABLE */
-.table-box{
-  margin:15px;
-  overflow-x:auto;
+  margin:20px auto;
 }
 
 table{
@@ -71,220 +25,108 @@ table{
   background:white;
   color:black;
   border-collapse:collapse;
-  border-radius:10px;
-  overflow:hidden;
 }
 
 th,td{
   border:1px solid #ddd;
   padding:8px;
-  font-size:13px;
 }
-
-th{
-  background:#16a34a;
-  color:white;
-}
-
-/* POPUP */
-.popup{
-  position:fixed;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  background:white;
-  color:black;
-  padding:20px;
-  border-radius:14px;
-  opacity:0;
-  visibility:hidden;
-  transition:0.3s;
-  box-shadow:0 10px 30px rgba(0,0,0,0.4);
-}
-
-.popup.show{
-  opacity:1;
-  visibility:visible;
-}
-
-/* BUTTON */
-button{
-  background:#dc2626;
-  color:white;
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  margin-top:10px;
-  cursor:pointer;
-}
-
 </style>
 </head>
 
 <body>
 
-<h2>📷 Scanner Kehadiran MDS</h2>
-
-<div class="info" id="infoBox"></div>
-
-<div id="statusBox" class="ready">🟢 Sedia scan</div>
+<h2>Scanner Kehadiran</h2>
 
 <div id="reader"></div>
 
-<button onclick="back()">⬅️ Kembali</button>
-
-<div class="table-box">
 <table>
 <thead>
 <tr>
 <th>Nama</th>
 <th>Jawatan</th>
-<th>Bahagian</th>
 <th>Masa</th>
-<th>Status</th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
 </table>
-</div>
-
-<div id="popup" class="popup">
-<h3 style="color:green;">✔ Berjaya</h3>
-<p id="pNama" style="font-weight:bold;"></p>
-<p id="pJawatan" style="font-weight:bold;"></p>
-</div>
 
 <script>
 
 const API = "https://script.google.com/macros/s/AKfycbwI1dGtenL6eWrnB5OyTv7HrNrRmk21qB6kOHGcHeIxGkcYlpzZ6ppo-FBVfuI-CU34FA/exec";
 
-let data = JSON.parse(sessionStorage.getItem("mds_data"));
+const data = JSON.parse(
+  sessionStorage.getItem("mds_data")
+);
 
-/* SAFETY CHECK */
-if(!data){
-  alert("Tiada sesi aktif");
-  window.location.href = "dashboard.html";
-}
-
-/* PAPAR INFO */
-document.getElementById("infoBox").innerHTML = `
-<b>Tarikh:</b> ${data.tarikh}<br>
-<b>Mesyuarat:</b> ${data.mesyuarat}<br>
-<b>Masa:</b> ${data.mula} - ${data.tamat}<br>
-<b>Tempat:</b> ${data.tempat}
-`;
-
-let scanner;
 let lock = false;
 
-const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-
-/* LOCAL STORAGE TRACK */
-function scanKey(id){
-  return `mds_${data.mesyuarat}_${data.tarikh}_${id}`;
-}
-
-function alreadyScanned(id){
-  return localStorage.getItem(scanKey(id));
-}
-
-function markScanned(id){
-  localStorage.setItem(scanKey(id), "1");
-}
-
-/* STATUS UI */
-function setStatus(type,msg){
-  const box = document.getElementById("statusBox");
-  box.className = type;
-  box.innerText = msg;
-}
-
-/* ADD ROW */
-function addRow(res){
-  const tr = document.createElement("tr");
-
-  tr.innerHTML = `
-    <td>${res.nama}</td>
-    <td>${res.jawatan}</td>
-    <td>${res.bahagian}</td>
-    <td>${new Date().toLocaleTimeString()}</td>
-    <td>✔ Hadir</td>
-  `;
-
-  document.getElementById("tbody").prepend(tr);
-}
-
-/* SCAN */
-function onScan(text){
+async function onScan(text){
 
   if(lock) return;
+
   lock = true;
 
-  setStatus("processing","🟡 Memproses...");
-
-  let qrData = text;
-
   try{
-    let parsed = JSON.parse(text);
-    qrData = parsed.id || parsed.nama || text;
-  }catch(e){}
 
-  if(alreadyScanned(qrData)){
-    setStatus("error","⚠ Sudah scan");
+    let qrData = text;
+
+    try{
+      qrData = JSON.parse(text).id;
+    }catch(e){}
+
+    let response = await fetch(API,{
+      method:"POST",
+      headers:{
+        "Content-Type":"application/x-www-form-urlencoded"
+      },
+      body:new URLSearchParams({
+        action:"scan",
+        nama:qrData,
+        tarikh:data.tarikh,
+        mesyuarat:data.mesyuarat
+      })
+    });
+
+    let res = await response.json();
+
+    if(!res.ok){
+      alert(res.message);
+      lock = false;
+      return;
+    }
+
+    const d = res.data;
+
+    let tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${d.nama}</td>
+      <td>${d.jawatan}</td>
+      <td>${d.masa}</td>
+    `;
+
+    document.getElementById("tbody")
+      .prepend(tr);
+
     lock = false;
-    return;
-  }
 
-  fetch(API,{
-  method:"POST",
-  body:new URLSearchParams({
-    action:"scan",
-    nama: qrData,
-    tarikh: data.tarikh,
-    mesyuarat: data.mesyuarat
-  })
-})
-.then(r=>r.json())
-.then(res=>{
+  }catch(err){
 
-  if(!res.ok){
-    setStatus("error","❌ "+res.message);
+    console.log(err);
+
     lock = false;
-    restart();
-    return;
+
   }
-
-  const d = res.data;
-
-  document.getElementById("pNama").innerText = d.nama || "-";
-  document.getElementById("pJawatan").innerText = d.jawatan || "-";
-
-  document.getElementById("popup").classList.add("show");
-
-  setStatus("success","✔ Berjaya");
-
-})
-.catch(err=>{
-  setStatus("error","❌ Server error");
-});
-
-/* START SCANNER */
-function startScanner(){
-  scanner = new Html5Qrcode("reader");
-
-  scanner.start(
-    { facingMode:"environment" },
-    { fps:10, qrbox:250 },
-    onScan
-  );
 }
 
-/* BACK */
-function back(){
-  window.location.href = "dashboard.html";
-}
+const scanner = new Html5Qrcode("reader");
 
-/* INIT */
-startScanner();
+scanner.start(
+  { facingMode:"environment" },
+  { fps:10, qrbox:250 },
+  onScan
+);
 
 </script>
 
