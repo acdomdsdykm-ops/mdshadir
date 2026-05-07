@@ -136,7 +136,7 @@ button{
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbymlPfK0KJspXEi_yP304w6rAeA-tjM8FdJt4S9gaujTfmiL-ERp6j-XBaPQcVypket_w/exec";
+const API = "https://script.google.com/macros/s/AKfycbyFMfJD6j9lbE8e0uo6n3OUZBL08AhWkkoUiWMFYBtXXMnugwYYysr9CNkouBKdD-nefg/exec";
 
 let data = JSON.parse(sessionStorage.getItem("mds_data") || "{}");
 
@@ -229,62 +229,43 @@ function startQR(){
         return;
       }
 
-      fetch(API,{
-  method:"POST",
-  headers:{
-    "Content-Type":"application/json"
-  },
-  body:JSON.stringify({
-    action:"scan",
-    nama:text,
-    jawatan:"-",
-    bahagian:"-",
-    tarikh:data.tarikh,
-    mesyuarat:data.mesyuarat
-  })
-})
-.then(r=>r.json())
-.then(res=>{
+      if (action === "scan") {
 
-  if(res.status === "error"){
-    setStatus("error","❌ " + (res.message || "Ralat"));
-    lock=false;
-    restart();
-    return;
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_HADIR);
+
+  const nama = (e.parameter.nama || "").trim();
+  const jawatan = e.parameter.jawatan || "-";
+  const bahagian = e.parameter.bahagian || "-";
+  const tarikh = e.parameter.tarikh || "";
+  const mesyuarat = e.parameter.mesyuarat || "";
+
+  if (!nama) {
+    return output({
+      status: "error",
+      message: "Nama kosong"
+    });
   }
 
-  markScanned(text);
-  beep.play();
+  const masa = Utilities.formatDate(new Date(), "Asia/Kuching", "HH:mm:ss");
 
-  pNama.innerText = res.nama || "";
-  pJawatan.innerText = res.jawatan || "";
+  sheet.appendRow([
+    nama,
+    jawatan,
+    bahagian,
+    tarikh,
+    mesyuarat,
+    masa,
+    "Hadir"
+  ]);
 
-  popup.classList.add("show");
-
-  addRow({
-    nama: res.nama,
-    jawatan: res.jawatan,
-    bahagian: res.bahagian || "-",
-    masa: res.masa,
-    status: "Hadir"
+  return output({
+    status: "success",
+    nama: nama,
+    jawatan: jawatan,
+    bahagian: bahagian,
+    masa: masa
   });
-
-  setStatus("success","✔ Berjaya");
-
-  setTimeout(()=>{
-    popup.classList.remove("show");
-    lock=false;
-    setStatus("ready","🟢 Sedia scan");
-    restart();
-  },1200);
-
-})
-.catch(err=>{
-  console.log("FETCH ERROR:", err);
-  setStatus("error","❌ Server error");
-  lock=false;
-  restart();
-});
+}
 
     }
   );
