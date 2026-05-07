@@ -18,10 +18,8 @@ body{
   align-items:center;
 }
 
-/* WRAPPER */
-.card{
-  width:370px;
-}
+/* CARD WRAPPER */
+.card{ width:370px; }
 
 /* HEADER */
 .card-header{
@@ -35,25 +33,25 @@ body{
   box-shadow:0 20px 50px rgba(0,0,0,0.35);
 }
 
-/* LOGO HEADER */
+/* HEADER LOGO */
 .logo{
   width:70px;
   margin-bottom:6px;
+  filter:brightness(0) invert(1);
 }
 
-/* MAJLIS NAME */
+/* HEADER TEXT */
 .agency{
   font-size:14px;
   font-weight:900;
   color:#fff;
-  letter-spacing:1px;
   text-shadow:0 2px 6px rgba(0,0,0,0.6);
 }
 
 .address{
   font-size:11px;
-  opacity:0.8;
   color:#e5e7eb;
+  opacity:0.85;
   line-height:1.4;
   margin-top:6px;
 }
@@ -80,40 +78,70 @@ body{
   position:relative;
   overflow:hidden;
 
-  /* EMBOSS FRAME */
+  /* emboss frame */
   box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.35),
+    inset 0 0 0 1px rgba(255,255,255,0.4),
     inset 0 0 20px rgba(0,0,0,0.25),
     0 25px 60px rgba(0,0,0,0.5);
 }
 
-/* WATERMARK */
+/* WATERMARK (lebih jelas sikit) */
 .id-card::before{
   content:"";
   position:absolute;
-  width:260px;
-  height:260px;
+  width:280px;
+  height:280px;
   background:url('mds_logo.png') no-repeat center;
   background-size:contain;
-  opacity:0.05;
+  opacity:0.12;
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
   pointer-events:none;
 }
 
-/* 🔥 CLEAN LOGO (FIXED) */
-.id-card-logo{
-  width:65px;
-  display:block;
+/* HOLOGRAM STRIPE */
+.id-card::after{
+  content:"";
+  position:absolute;
+  top:-60%;
+  left:-30%;
+  width:60%;
+  height:220%;
+  background:linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255,255,255,0.12) 30%,
+    rgba(0,255,255,0.20) 50%,
+    rgba(255,255,255,0.12) 70%,
+    transparent 100%
+  );
+  transform:rotate(25deg);
+  animation:holo 4s linear infinite;
+  pointer-events:none;
+}
+
+@keyframes holo{
+  0%{transform:translateX(-120%) rotate(25deg);}
+  100%{transform:translateX(220%) rotate(25deg);}
+}
+
+/* LOGO BULAT PUTIH */
+.id-card-logo-wrap{
+  width:70px;
+  height:70px;
+  background:#fff;
+  border-radius:50%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
   margin:0 auto 10px auto;
+  box-shadow:0 6px 15px rgba(0,0,0,0.25);
+}
 
-  filter:none; /* IMPORTANT: no dark effect */
-
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
-
-  box-shadow:0 4px 10px rgba(0,0,0,0.2);
+.id-card-logo{
+  width:45px;
+  height:auto;
 }
 
 /* TITLE */
@@ -122,7 +150,6 @@ body{
   margin-bottom:12px;
 }
 
-/* MAJLIS NAME (WHITE) */
 .org-name{
   font-size:12px;
   font-weight:700;
@@ -130,18 +157,16 @@ body{
   text-shadow:0 2px 5px rgba(0,0,0,0.5);
 }
 
-/* BLUE LABEL */
+/* LABEL BLUE */
 .section-title{
   font-size:14px;
   font-weight:900;
   color:#0b2a4a;
   letter-spacing:1.5px;
-  text-shadow:
-    0 1px 0 rgba(255,255,255,0.6),
-    0 -1px 0 rgba(0,0,0,0.3);
+  text-shadow:0 1px 0 rgba(255,255,255,0.6);
 }
 
-/* PROFILE CENTER */
+/* PROFILE */
 .profile-center{
   display:flex;
   flex-direction:column;
@@ -165,18 +190,17 @@ body{
   font-weight:900;
   padding:10px 12px;
   border-radius:12px;
-  background:rgba(255,255,255,0.25);
+  background:rgba(255,255,255,0.3);
   color:#000;
 }
 
-/* BOTTOM SECTION */
+/* ================= INFO GRID KEMAS ================= */
 .bottom-row{
   display:flex;
   gap:12px;
   align-items:flex-start;
 }
 
-/* QR LEFT */
 .qr-box{
   background:white;
   padding:8px;
@@ -191,18 +215,18 @@ body{
   height:100px;
 }
 
-/* INFO RIGHT */
+/* GRID INFO SEKATA */
 .info{
   flex:1;
 }
 
 .row{
-  display:flex;
-  justify-content:space-between;
+  display:grid;
+  grid-template-columns:90px 1fr;
   align-items:center;
   padding:6px 0;
-  border-bottom:1px solid rgba(255,255,255,0.2);
-  color:#e5e7eb;
+  border-bottom:1px solid rgba(0,0,0,0.15);
+  gap:8px;
 }
 
 .row:last-child{
@@ -212,12 +236,17 @@ body{
 .label{
   font-size:10px;
   text-transform:uppercase;
+  color:#000;
+  opacity:0.75;
+  letter-spacing:0.5px;
 }
 
 .value{
   font-size:12px;
   font-weight:800;
-  text-align:right;
+  color:#000;
+  text-align:left;
+  word-break:break-word;
 }
 
 /* NOTE */
@@ -225,7 +254,7 @@ body{
   margin-top:12px;
   font-size:11px;
   text-align:center;
-  color:#e5e7eb;
+  color:#000;
 }
 
 /* RESET */
@@ -297,8 +326,10 @@ body{
   <!-- ID CARD -->
   <div class="id-card" id="idCard">
 
-    <!-- CLEAN LOGO -->
-    <img src="mds.png" class="id-card-logo">
+    <!-- LOGO BULAT -->
+    <div class="id-card-logo-wrap">
+      <img src="mds.png" class="id-card-logo">
+    </div>
 
     <div class="title-wrap">
       <div class="org-name">MAJLIS DAERAH SIMUNJAN</div>
