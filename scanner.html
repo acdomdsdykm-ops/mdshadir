@@ -2,22 +2,39 @@
 <html lang="ms">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scanner Kehadiran</title>
+<title>Scanner Kehadiran MDS</title>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
 body{
   font-family:Arial;
-  margin:0;
-  text-align:center;
-  background:linear-gradient(135deg,#022c22,#064e3b);
+  background:#022c22;
   color:white;
+  text-align:center;
 }
 
 #reader{
   width:320px;
-  margin:20px auto;
+  margin:15px auto;
+}
+
+#statusBox{
+  width:300px;
+  margin:10px auto;
+  padding:12px;
+  border-radius:10px;
+  font-weight:bold;
+}
+
+.ready{background:#16a34a;}
+.processing{background:#f59e0b;}
+.success{background:#2563eb;}
+.error{background:#dc2626;}
+
+.table-box{
+  margin:15px;
+  overflow-x:auto;
 }
 
 table{
@@ -30,103 +47,162 @@ table{
 th,td{
   border:1px solid #ddd;
   padding:8px;
+  font-size:13px;
+}
+
+th{
+  background:#16a34a;
+  color:white;
+}
+
+.status-Hadir{color:green;font-weight:bold;}
+.status-Duplicate{color:red;font-weight:bold;}
+
+.popup{
+  position:fixed;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  background:white;
+  color:black;
+  padding:20px;
+  border-radius:12px;
+  opacity:0;
+  visibility:hidden;
+}
+.popup.show{
+  opacity:1;
+  visibility:visible;
+}
+
+button{
+  background:red;
+  color:white;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  margin-top:10px;
 }
 </style>
 </head>
 
 <body>
 
-<h2>Scanner Kehadiran</h2>
+<h2>📷 Scanner Kehadiran MDS</h2>
+
+<div id="statusBox" class="ready">🟢 Sedia scan</div>
 
 <div id="reader"></div>
 
+<button onclick="back()">⬅️ Kembali</button>
+
+<div class="table-box">
 <table>
 <thead>
 <tr>
 <th>Nama</th>
 <th>Jawatan</th>
+<th>Bahagian</th>
 <th>Masa</th>
+<th>Status</th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
 </table>
+</div>
+
+<div id="popup" class="popup">
+<h3>✔ Berjaya</h3>
+<p id="pNama"></p>
+<p id="pJawatan"></p>
+</div>
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbwI1dGtenL6eWrnB5OyTv7HrNrRmk21qB6kOHGcHeIxGkcYlpzZ6ppo-FBVfuI-CU34FA/exec";
+const API="https://script.google.com/macros/s/AKfycbwI1dGtenL6eWrnB5OyTv7HrNrRmk21qB6kOHGcHeIxGkcYlpzZ6ppo-FBVfuI-CU34FA/exec";
 
-const data = JSON.parse(
-  sessionStorage.getItem("mds_data")
-);
+let data=JSON.parse(sessionStorage.getItem("mds_data")||"{}");
+let scanner,lock=false;
+const beep=new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
 
-let lock = false;
-
-async function onScan(text){
-
-  if(lock) return;
-
-  lock = true;
-
-  try{
-
-    let qrData = text;
-
-    try{
-      qrData = JSON.parse(text).id;
-    }catch(e){}
-
-    let response = await fetch(API,{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/x-www-form-urlencoded"
-      },
-      body:new URLSearchParams({
-        action:"scan",
-        nama:qrData,
-        tarikh:data.tarikh,
-        mesyuarat:data.mesyuarat
-      })
-    });
-
-    let res = await response.json();
-
-    if(!res.ok){
-      alert(res.message);
-      lock = false;
-      return;
-    }
-
-    const d = res.data;
-
-    let tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>${d.nama}</td>
-      <td>${d.jawatan}</td>
-      <td>${d.masa}</td>
-    `;
-
-    document.getElementById("tbody")
-      .prepend(tr);
-
-    lock = false;
-
-  }catch(err){
-
-    console.log(err);
-
-    lock = false;
-
-  }
+function setStatus(t,m){
+statusBox.className=t;
+statusBox.innerText=m;
 }
 
-const scanner = new Html5Qrcode("reader");
+function addRow(res){
+let tr=document.createElement("tr");
 
-scanner.start(
-  { facingMode:"environment" },
-  { fps:10, qrbox:250 },
-  onScan
-);
+tr.innerHTML=`
+<td>${res.nama}</td>
+<td>${res.jawatan}</td>
+<td>${res.bahagian || "-"}</td>
+<td>${res.masa}</td>
+<td class="status-${res.status}">${res.status}</td>
+`;
+
+tbody.prepend(tr);
+}
+
+function startQR(){
+
+scanner=new Html5Qrcode("reader");
+
+scanner.start({facingMode:"environment"},{fps:10,qrbox:250},text=>{
+
+if(lock) return;
+lock=true;
+
+setStatus("processing","🟡 Proses...");
+
+scanner.stop().catch(()=>{});
+
+fetch(API,{
+method:"POST",
+body:JSON.stringify({
+nama:text,
+jawatan:"-",
+bahagian:"-",
+tarikh:data.tarikh,
+mesyuarat:data.mesyuarat
+})
+})
+.then(r=>r.json())
+.then(res=>{
+
+beep.play();
+
+pNama.innerHTML=res.nama;
+pJawatan.innerHTML=res.jawatan;
+
+popup.classList.add("show");
+
+addRow(res);
+
+setStatus("success","🔵 OK");
+
+setTimeout(()=>{
+popup.classList.remove("show");
+lock=false;
+setStatus("ready","🟢 Sedia scan");
+startQR();
+},1200);
+
+})
+.catch(()=>{
+setStatus("error","❌ Error");
+lock=false;
+startQR();
+});
+
+});
+
+}
+
+function back(){
+window.location.href="dashboard.html";
+}
+
+startQR();
 
 </script>
 
