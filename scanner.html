@@ -230,54 +230,61 @@ function startQR(){
       }
 
       fetch(API,{
-        method:"POST",
-        headers:{
-          "Content-Type":"application/json"
-        },
-        body:JSON.stringify({
-          nama:text,
-          jawatan:"-",
-          bahagian:"-",
-          tarikh:data.tarikh,
-          mesyuarat:data.mesyuarat
-        })
-      })
-      .then(r=>r.json())
-      .then(res=>{
+  method:"POST",
+  headers:{
+    "Content-Type":"application/json"
+  },
+  body:JSON.stringify({
+    action:"scan",
+    nama:text,
+    jawatan:"-",
+    bahagian:"-",
+    tarikh:data.tarikh,
+    mesyuarat:data.mesyuarat
+  })
+})
+.then(r=>r.json())
+.then(res=>{
 
-        if(res.status === "error"){
-          setStatus("error","❌ "+res.message);
-          lock=false;
-          restart();
-          return;
-        }
+  if(res.status === "error"){
+    setStatus("error","❌ " + (res.message || "Ralat"));
+    lock=false;
+    restart();
+    return;
+  }
 
-        markScanned(text);
-        beep.play();
+  markScanned(text);
+  beep.play();
 
-        pNama.innerText = res.nama;
-        pJawatan.innerText = res.jawatan;
+  pNama.innerText = res.nama || "";
+  pJawatan.innerText = res.jawatan || "";
 
-        popup.classList.add("show");
+  popup.classList.add("show");
 
-        addRow(res);
+  addRow({
+    nama: res.nama,
+    jawatan: res.jawatan,
+    bahagian: res.bahagian || "-",
+    masa: res.masa,
+    status: "Hadir"
+  });
 
-        setStatus("success","✔ Berjaya");
+  setStatus("success","✔ Berjaya");
 
-        setTimeout(()=>{
-          popup.classList.remove("show");
-          lock=false;
-          setStatus("ready","🟢 Sedia scan");
-          restart();
-        },1200);
+  setTimeout(()=>{
+    popup.classList.remove("show");
+    lock=false;
+    setStatus("ready","🟢 Sedia scan");
+    restart();
+  },1200);
 
-      })
-      .catch(err=>{
-        console.log(err);
-        setStatus("error","❌ Server error");
-        lock=false;
-        restart();
-      });
+})
+.catch(err=>{
+  console.log("FETCH ERROR:", err);
+  setStatus("error","❌ Server error");
+  lock=false;
+  restart();
+});
 
     }
   );
