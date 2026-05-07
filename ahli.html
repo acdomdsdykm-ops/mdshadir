@@ -14,52 +14,44 @@ body{
   min-height:100vh;
   background:linear-gradient(135deg,#064e3b,#022c22);
   display:flex;
-  align-items:center;
   justify-content:center;
+  align-items:center;
   color:white;
 }
 
 /* CARD */
 .card{
   width:370px;
+}
+
+/* HEADER */
+.card-header{
   background:rgba(255,255,255,0.08);
   backdrop-filter:blur(18px);
   border:1px solid rgba(255,255,255,0.15);
   border-radius:22px;
   padding:22px;
   text-align:center;
-  box-shadow:0 30px 70px rgba(0,0,0,0.45);
-  position:relative;
-  overflow:hidden;
+  margin-bottom:15px;
+  box-shadow:0 20px 50px rgba(0,0,0,0.35);
 }
 
-.card::before{
-  content:"";
-  position:absolute;
-  width:340px;
-  height:340px;
-  background:url('mds.png') no-repeat center;
-  background-size:contain;
-  opacity:0.06;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  pointer-events:none;
+.logo{
+  width:70px;
+  margin-bottom:6px;
 }
-
-/* HEADER */
-.logo{ width:70px; margin-bottom:6px; }
 
 .agency{
-  font-size:16px;
+  font-size:14px;
   font-weight:800;
+  letter-spacing:1px;
 }
 
 .address{
   font-size:11px;
   opacity:0.8;
-  margin-top:3px;
   line-height:1.4;
+  margin-top:6px;
 }
 
 /* BUTTON */
@@ -70,106 +62,147 @@ body{
   border:none;
   border-radius:12px;
   font-weight:700;
-  cursor:pointer;
   background:#10b981;
   color:white;
+  cursor:pointer;
 }
 
-.main-btn:disabled{
-  opacity:0.6;
-  cursor:not-allowed;
-}
-
-/* ID CARD */
+/* ================= ID CARD ================= */
 .id-card{
   margin-top:18px;
   padding:22px;
-  border-radius:20px;
+  border-radius:22px;
   background:linear-gradient(135deg,#0ea5a4,#22c55e);
-  box-shadow:0 25px 60px rgba(0,0,0,0.35);
-  display:none;
+  box-shadow:0 30px 70px rgba(0,0,0,0.45);
   position:relative;
-  text-align:left;
+  overflow:hidden;
 }
 
+/* 🔥 WATERMARK BESAR BELAKANG */
 .id-card::before{
   content:"";
   position:absolute;
-  width:420px;
-  height:420px;
+  width:750px;
+  height:750px;
   background:url('mds.png') no-repeat center;
   background-size:contain;
-  opacity:0.05;
+  opacity:0.035;
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
   pointer-events:none;
 }
 
-/* TITLE */
-.section-title{
-  font-size:14px;
-  font-weight:800;
-  letter-spacing:1.8px;
-  text-transform:uppercase;
-  text-align:center;
-  margin-bottom:10px;
-}
-
-.section-title::after{
-  content:"";
+/* LOGO DALAM KAD */
+.id-card-logo{
+  width:55px;
+  height:55px;
+  background:white;
+  border-radius:50%;
+  padding:6px;
   display:block;
-  width:50px;
-  height:2px;
-  background:rgba(255,255,255,0.7);
-  margin:6px auto 0;
+  margin:0 auto 8px auto;
+  box-shadow:0 10px 25px rgba(0,0,0,0.35);
 }
 
-/* NAME */
+/* 🔥 TITLE SECTION */
+.title-wrap{
+  text-align:center;
+  margin-bottom:12px;
+}
+
+/* NAMA MAJLIS ATAS TITLE */
+.title-wrap .org-name{
+  font-size:12px;
+  font-weight:700;
+  opacity:0.9;
+  letter-spacing:1px;
+  margin-bottom:3px;
+}
+
+/* TITLE UTAMA */
+.section-title{
+  font-weight:900;
+  font-size:14px;
+  letter-spacing:1.5px;
+}
+
+/* CENTER PROFILE */
+.profile-center{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  margin-bottom:12px;
+}
+
+.staff-photo{
+  width:100px;
+  height:120px;
+  object-fit:cover;
+  border-radius:14px;
+  border:3px solid rgba(255,255,255,0.6);
+}
+
+/* NAME BLACK */
 .name-box{
+  margin-top:10px;
   font-size:20px;
   font-weight:800;
-  padding:10px;
+  padding:10px 12px;
   border-radius:12px;
-  background:rgba(255,255,255,0.18);
-  text-align:center;
-  margin-bottom:14px;
+  background:rgba(255,255,255,0.25);
+  color:#000;
 }
 
-/* ROW */
-.row{
+/* BOTTOM */
+.bottom-row{
   display:flex;
-  justify-content:space-between;
-  padding:8px 0;
-  border-bottom:1px solid rgba(255,255,255,0.25);
+  gap:12px;
+  align-items:flex-start;
 }
 
-.row:last-child{ border-bottom:none; }
-
-.label{
-  font-size:11px;
-  opacity:0.85;
-  text-transform:uppercase;
-}
-
-.value{
-  font-size:13px;
-  font-weight:800;
-}
-
-/* QR */
+/* QR LEFT */
 .qr-box{
-  margin-top:14px;
   background:white;
-  padding:10px;
-  border-radius:14px;
+  padding:8px;
+  border-radius:12px;
+  flex:0 0 110px;
   display:flex;
   justify-content:center;
 }
 
 .qr-box img{
-  width:160px;
-  height:160px;
+  width:100px;
+  height:100px;
+}
+
+/* INFO RIGHT */
+.info{
+  flex:1;
+}
+
+/* ALIGN FIX */
+.row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:6px 0;
+  border-bottom:1px solid rgba(255,255,255,0.25);
+}
+
+.row:last-child{border-bottom:none;}
+
+.label{
+  font-size:10px;
+  opacity:0.9;
+  text-transform:uppercase;
+}
+
+.value{
+  font-size:12px;
+  font-weight:800;
+  text-align:right;
 }
 
 /* NOTE */
@@ -181,7 +214,6 @@ body{
 
 /* RESET */
 .reset-btn{
-  display:none;
   margin-top:14px;
   width:100%;
   padding:12px;
@@ -230,53 +262,67 @@ body{
 
 <div class="card">
 
-  <img src="mds.png" class="logo">
+  <!-- HEADER -->
+  <div class="card-header">
 
-  <div class="agency">MAJLIS DAERAH SIMUNJAN</div>
-  <div class="address">
-    Lot 805, Gunong Ngeli New Service Centre,<br>
-    94800 Simunjan, Sarawak.
+    <img src="mds.png" class="logo">
+
+    <div class="agency">MAJLIS DAERAH SIMUNJAN</div>
+
+    <div class="address">
+      Lot 805, Gunong Ngeli New Service Centre,<br>
+      94800 Simunjan, Sarawak.
+    </div>
+
+    <button class="main-btn" onclick="searchIC()">🔍 Semakan ID Staf</button>
+
   </div>
 
-  <button class="main-btn" id="searchBtn" onclick="searchIC()">🔍 Semakan ID Staf</button>
-
+  <!-- ID CARD -->
   <div class="id-card" id="idCard">
 
-    <div class="section-title">KAD DIGITAL STAF</div>
+    <img src="mds.png" class="id-card-logo">
 
-    <div class="name-box" id="nama"></div>
-
-    <div class="row">
-      <div class="label">Jawatan</div>
-      <div class="value" id="jawatan"></div>
+    <!-- 🔥 TITLE WITH ORGAN NAME ABOVE -->
+    <div class="title-wrap">
+      <div class="org-name">MAJLIS DAERAH SIMUNJAN</div>
+      <div class="section-title">KAD DIGITAL STAF</div>
     </div>
 
-    <div class="row">
-      <div class="label">Bahagian</div>
-      <div class="value" id="bahagian"></div>
+    <!-- CENTER PROFILE -->
+    <div class="profile-center">
+      <img id="staffPhoto" class="staff-photo">
+      <div class="name-box" id="nama"></div>
     </div>
 
-    <div class="row">
-      <div class="label">ID Staf</div>
-      <div class="value" id="idstaf"></div>
-    </div>
+    <!-- BOTTOM -->
+    <div class="bottom-row">
 
-    <div class="qr-box" id="qrcode"></div>
+      <div class="qr-box" id="qrcode"></div>
+
+      <div class="info">
+
+        <div class="row"><div class="label">Jawatan</div><div class="value" id="jawatan"></div></div>
+        <div class="row"><div class="label">Bahagian</div><div class="value" id="bahagian"></div></div>
+        <div class="row"><div class="label">ID Staf</div><div class="value" id="idstaf"></div></div>
+
+      </div>
+
+    </div>
 
     <div class="note">
-      Sila tunjukkan atau imbaskan QR untuk rekod kehadiran rasmi anda.
-      Terima kasih.
+      Sila imbas QR untuk rekod kehadiran rasmi.
     </div>
 
-  </div>
+    <button class="reset-btn" onclick="location.reload()">🔄 Semakan Semula</button>
 
-  <button class="reset-btn" id="resetBtn" onclick="location.reload()">🔄 Semakan Semula</button>
+  </div>
 
 </div>
 
 <script>
 
-const API="https://script.google.com/macros/s/AKfycbwkMrH2Yf3jOJ2h-G5KzTxWLuEDfWpw31MsFVq8W73W9yQA5UP5kb7S6tQQrS7v3PJfkg/exec";
+const API="https://script.google.com/macros/s/AKfycbxwwGQEH_bQY9fbkVIASu_WxGtyXrzrVqAQ77xHXm3iJpn_v8xHStHL_nRgSZXilQuPLQ/exec";
 
 async function searchIC(){
 
@@ -288,8 +334,6 @@ async function searchIC(){
     return;
   }
 
-  let btn = document.getElementById("searchBtn");
-  btn.disabled = true;
   document.getElementById("loading").style.display="flex";
 
   try{
@@ -309,22 +353,22 @@ async function searchIC(){
     }
 
     document.getElementById("idCard").style.display="block";
-    document.getElementById("resetBtn").style.display="block";
 
     document.getElementById("nama").innerText=data.nama;
     document.getElementById("jawatan").innerText=data.jawatan;
     document.getElementById("bahagian").innerText=data.bahagian;
     document.getElementById("idstaf").innerText=data.id;
 
-    let qr=`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(data.id)}&t=${Date.now()}`;
+    document.getElementById("staffPhoto").src =
+      data.gambar || "https://via.placeholder.com/100x120";
+
+    let qr=`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(data.id)}&t=${Date.now()}`;
     document.getElementById("qrcode").innerHTML=`<img src="${qr}">`;
 
   }catch(e){
     alert("Ralat server / API tidak aktif");
-    location.reload();
   }finally{
     document.getElementById("loading").style.display="none";
-    btn.disabled = false;
   }
 }
 
