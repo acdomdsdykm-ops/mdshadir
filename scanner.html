@@ -246,73 +246,64 @@ function startQR(){
         return;
       }
 
-      fetch(API,{
-  method:"POST",
-  body:new URLSearchParams({
-    action:"scan",
-    id:text,   // 👈 CHANGE HERE
-    tarikh:data.tarikh,
-    mesyuarat:data.mesyuarat
+      fetch(API, {
+  method: "POST",
+  body: new URLSearchParams({
+    action: "scan",
+    id: text,
+    tarikh: data.tarikh,
+    mesyuarat: data.mesyuarat
   })
 })
-      })
-      .then(r => r.text())
-      .then(raw => {
+.then(r => r.text())
+.then(raw => {
 
-        console.log("RAW RESPONSE:", raw);
+  console.log("RAW RESPONSE:", raw);
 
-        let res;
-        try{
-          res = JSON.parse(raw);
-        }catch(err){
-          throw new Error("Response bukan JSON");
-        }
+  let res;
+  try {
+    res = JSON.parse(raw);
+  } catch (err) {
+    throw new Error("Response bukan JSON");
+  }
 
-        if (res.status === "error") {
-          throw new Error(res.message || "Ralat server");
-        }
+  if (res.status === "error") {
+    throw new Error(res.message || "Ralat server");
+  }
 
-        markScanned(text.trim().toUpperCase());
+  markScanned(text.trim().toUpperCase());
 
-        pNama.innerText = res.nama || text;
-        pJawatan.innerText = res.jawatan || "-";
+  pNama.innerText = res.nama || text;
+  pJawatan.innerText = res.jawatan || "-";
 
-        popup.classList.add("show");
+  popup.classList.add("show");
 
-        addRow({
-          nama: res.nama || text,
-          jawatan: res.jawatan || "-",
-          bahagian: res.bahagian || "-",
-          masa: res.masa || "",
-          status: "Hadir"
-        });
-
-        setStatus("success","✔ Berjaya");
-
-        beep.play().catch(()=>{});
-
-        setTimeout(() => {
-          popup.classList.remove("show");
-          setStatus("ready","🟢 Sedia scan");
-          lock = false;
-          restart();
-        }, 1200);
-
-      })
-      .catch(err => {
-        console.log("SCAN ERROR:", err);
-        setStatus("error","❌ " + err.message);
-        lock = false;
-        restart();
-      });
-    }
-  ).catch(err => {
-    console.log("START ERROR:", err);
-    setStatus("error","❌ Kamera gagal dibuka");
-    scanner = null;
-    lock = false;
+  addRow({
+    nama: res.nama || text,
+    jawatan: res.jawatan || "-",
+    bahagian: res.bahagian || "-",
+    masa: res.masa || "",
+    status: "Hadir"
   });
-}
+
+  setStatus("success", "✔ Berjaya");
+
+  beep.play().catch(()=>{});
+
+  setTimeout(() => {
+    popup.classList.remove("show");
+    setStatus("ready", "🟢 Sedia scan");
+    lock = false;
+    restart();
+  }, 1200);
+
+})
+.catch(err => {
+  console.log("SCAN ERROR:", err);
+  setStatus("error", "❌ " + err.message);
+  lock = false;
+  restart();
+});
 
 function back(){
   window.location.href = "dashboard.html";
