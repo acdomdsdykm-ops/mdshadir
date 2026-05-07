@@ -2,7 +2,7 @@
 <html lang="ms">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>QR Staf MDS Premium</title>
+<title>Kad Digital Staf MDS</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
@@ -18,8 +18,10 @@ body{
   align-items:center;
 }
 
-/* CARD */
-.card{ width:370px; }
+/* WRAPPER */
+.card{
+  width:370px;
+}
 
 /* HEADER */
 .card-header{
@@ -33,14 +35,13 @@ body{
   box-shadow:0 20px 50px rgba(0,0,0,0.35);
 }
 
-/* 🔥 LOGO CLEAN (NO BACKGROUND) */
+/* LOGO HEADER */
 .logo{
   width:70px;
   margin-bottom:6px;
-  filter:brightness(0) invert(1); /* putih clean */
 }
 
-/* NAMA MAJLIS */
+/* MAJLIS NAME */
 .agency{
   font-size:14px;
   font-weight:900;
@@ -79,19 +80,20 @@ body{
   position:relative;
   overflow:hidden;
 
+  /* EMBOSS FRAME */
   box-shadow:
     inset 0 0 0 1px rgba(255,255,255,0.35),
     inset 0 0 20px rgba(0,0,0,0.25),
     0 25px 60px rgba(0,0,0,0.5);
 }
 
-/* WATERMARK SMALL */
+/* WATERMARK */
 .id-card::before{
   content:"";
   position:absolute;
   width:260px;
   height:260px;
-  background:url('mds.png') no-repeat center;
+  background:url('mds_logo.png') no-repeat center;
   background-size:contain;
   opacity:0.05;
   top:50%;
@@ -100,12 +102,18 @@ body{
   pointer-events:none;
 }
 
-/* 🔥 LOGO DIRECT (NO BACKGROUND CIRCLE) */
+/* 🔥 CLEAN LOGO (FIXED) */
 .id-card-logo{
-  width:60px;
+  width:65px;
   display:block;
   margin:0 auto 10px auto;
-  filter:brightness(0.2); /* dark premium look */
+
+  filter:none; /* IMPORTANT: no dark effect */
+
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+
+  box-shadow:0 4px 10px rgba(0,0,0,0.2);
 }
 
 /* TITLE */
@@ -114,6 +122,7 @@ body{
   margin-bottom:12px;
 }
 
+/* MAJLIS NAME (WHITE) */
 .org-name{
   font-size:12px;
   font-weight:700;
@@ -121,7 +130,7 @@ body{
   text-shadow:0 2px 5px rgba(0,0,0,0.5);
 }
 
-/* 🔵 LABEL BIRU TUA */
+/* BLUE LABEL */
 .section-title{
   font-size:14px;
   font-weight:900;
@@ -132,7 +141,7 @@ body{
     0 -1px 0 rgba(0,0,0,0.3);
 }
 
-/* PROFILE */
+/* PROFILE CENTER */
 .profile-center{
   display:flex;
   flex-direction:column;
@@ -160,14 +169,14 @@ body{
   color:#000;
 }
 
-/* BOTTOM */
+/* BOTTOM SECTION */
 .bottom-row{
   display:flex;
   gap:12px;
   align-items:flex-start;
 }
 
-/* QR */
+/* QR LEFT */
 .qr-box{
   background:white;
   padding:8px;
@@ -175,7 +184,6 @@ body{
   flex:0 0 110px;
   display:flex;
   justify-content:center;
-  box-shadow:inset 0 0 6px rgba(0,0,0,0.2);
 }
 
 .qr-box img{
@@ -183,8 +191,10 @@ body{
   height:100px;
 }
 
-/* INFO */
-.info{ flex:1; }
+/* INFO RIGHT */
+.info{
+  flex:1;
+}
 
 .row{
   display:flex;
@@ -195,7 +205,9 @@ body{
   color:#e5e7eb;
 }
 
-.row:last-child{border-bottom:none;}
+.row:last-child{
+  border-bottom:none;
+}
 
 .label{
   font-size:10px;
@@ -269,7 +281,7 @@ body{
   <!-- HEADER -->
   <div class="card-header">
 
-    <img src="mds.png" class="logo">
+    <img src="mds_logo.png" class="logo">
 
     <div class="agency">MAJLIS DAERAH SIMUNJAN</div>
 
@@ -285,8 +297,8 @@ body{
   <!-- ID CARD -->
   <div class="id-card" id="idCard">
 
-    <!-- 🔥 DIRECT LOGO (NO BACKGROUND) -->
-    <img src="mds.png" class="id-card-logo">
+    <!-- CLEAN LOGO -->
+    <img src="mds_logo.png" class="id-card-logo">
 
     <div class="title-wrap">
       <div class="org-name">MAJLIS DAERAH SIMUNJAN</div>
@@ -303,11 +315,9 @@ body{
       <div class="qr-box" id="qrcode"></div>
 
       <div class="info">
-
         <div class="row"><div class="label">Jawatan</div><div class="value" id="jawatan"></div></div>
         <div class="row"><div class="label">Bahagian</div><div class="value" id="bahagian"></div></div>
         <div class="row"><div class="label">ID Staf</div><div class="value" id="idstaf"></div></div>
-
       </div>
 
     </div>
