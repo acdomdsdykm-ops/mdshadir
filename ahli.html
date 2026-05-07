@@ -42,7 +42,6 @@ body{
   font-size:14px;
   font-weight:900;
   color:#fff;
-  text-shadow:0 2px 6px rgba(0,0,0,0.6);
 }
 
 .address{
@@ -65,7 +64,7 @@ body{
   cursor:pointer;
 }
 
-/* ================= CARD ================= */
+/* ================= ID CARD ================= */
 .id-card{
   margin-top:18px;
   padding:22px;
@@ -78,9 +77,19 @@ body{
     inset 0 0 0 1px rgba(255,255,255,0.4),
     inset 0 0 25px rgba(0,0,0,0.25),
     0 25px 60px rgba(0,0,0,0.5);
+
+  display:none;
+  opacity:0;
+  transform:translateY(10px);
+  transition:0.4s ease;
 }
 
-/* WATERMARK (soft premium) */
+.id-card.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* WATERMARK */
 .id-card::before{
   content:"";
   position:absolute;
@@ -88,45 +97,41 @@ body{
   height:320px;
   background:url('mds.png') no-repeat center;
   background-size:contain;
-  opacity:0.10;
+  opacity:0.08;
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
   pointer-events:none;
 }
 
-/* 🌈 HOLOGRAM REAL MYKAD STYLE */
+/* HOLOGRAM SOFT */
 .id-card::after{
   content:"";
   position:absolute;
-  top:-90%;
+  top:-80%;
   left:-50%;
   width:90%;
   height:280%;
-
   background:linear-gradient(
     120deg,
     transparent 0%,
-    rgba(255,0,255,0.16) 18%,
-    rgba(0,255,255,0.22) 38%,
-    rgba(255,255,0,0.20) 52%,
-    rgba(0,255,150,0.22) 70%,
-    rgba(255,0,120,0.15) 85%,
+    rgba(255,0,255,0.12) 20%,
+    rgba(0,255,255,0.18) 45%,
+    rgba(255,255,0,0.16) 60%,
+    rgba(0,255,150,0.18) 80%,
     transparent 100%
   );
-
   transform:rotate(25deg);
-  animation:holoMove 4s linear infinite;
-  filter:blur(1px);
+  animation:holo 4s linear infinite;
   pointer-events:none;
 }
 
-@keyframes holoMove{
+@keyframes holo{
   0%{transform:translateX(-150%) rotate(25deg);}
   100%{transform:translateX(260%) rotate(25deg);}
 }
 
-/* EMBOSS LOGO */
+/* LOGO */
 .id-card-logo-wrap{
   width:75px;
   height:75px;
@@ -136,11 +141,7 @@ body{
   align-items:center;
   justify-content:center;
   margin:0 auto 10px auto;
-
-  box-shadow:
-    inset 2px 2px 6px rgba(255,255,255,0.9),
-    inset -4px -4px 8px rgba(0,0,0,0.25),
-    0 10px 18px rgba(0,0,0,0.25);
+  box-shadow:0 10px 18px rgba(0,0,0,0.25);
 }
 
 .id-card-logo-wrap img{
@@ -195,6 +196,7 @@ body{
 .bottom-row{
   display:flex;
   gap:12px;
+  align-items:flex-start;
 }
 
 .qr-box{
@@ -211,7 +213,9 @@ body{
   height:100px;
 }
 
-.info{ flex:1; }
+.info{
+  flex:1;
+}
 
 .row{
   display:grid;
@@ -280,7 +284,6 @@ body{
 
 <div class="card">
 
-  <!-- HEADER -->
   <div class="card-header">
 
     <img src="mds.png" class="logo">
@@ -296,8 +299,7 @@ body{
 
   </div>
 
-  <!-- CARD -->
-  <div class="id-card" id="idCard" style="display:none;">
+  <div class="id-card" id="idCard">
 
     <div class="id-card-logo-wrap">
       <img src="mds.png">
@@ -357,7 +359,9 @@ async function searchIC(){
       return;
     }
 
-    document.getElementById("idCard").style.display="block";
+    let card=document.getElementById("idCard");
+    card.style.display="block";
+    setTimeout(()=>card.classList.add("show"),50);
 
     document.getElementById("nama").innerText=data.nama;
     document.getElementById("jawatan").innerText=data.jawatan;
