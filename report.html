@@ -169,43 +169,60 @@ th{background:#f2f2f2}
 </div>
 
 <!-- PDF TEMPLATE -->
-<div id="pdfArea" style="display:none;">
+<div id="pdfArea" style="display:none;background:white;color:black;padding:20px;font-family:Arial;">
 
-  <div style="text-align:center;margin-bottom:20px;">
-    <img src="mds.png" style="width:80px;">
-    <h2>MAJLIS DAERAH SIMUNJAN</h2>
-    <p style="font-size:12px;">
+  <!-- HEADER LETTERHEAD -->
+  <div style="text-align:center;border-bottom:2px solid #000;padding-bottom:10px;margin-bottom:15px;">
+
+    <img src="mds.png" style="width:80px;margin-bottom:5px;">
+
+    <h2 style="margin:0;font-size:18px;">
+      MAJLIS DAERAH SIMUNJAN
+    </h2>
+
+    <p style="margin:3px 0;font-size:12px;">
       Lot 805, Gunong Ngeli New Service Centre, 94800 Simunjan, Sarawak
     </p>
-    <hr>
+
   </div>
 
-  <h3 style="text-align:center;">LAPORAN KEHADIRAN MESYUARAT</h3>
+  <!-- TITLE REPORT -->
+  <h3 style="text-align:center;margin:10px 0;">
+    LAPORAN KEHADIRAN MESYUARAT / PROGRAM
+  </h3>
 
-  <p>
-    <b>Mesyuarat:</b> <span id="pdfMesyuarat"></span><br>
+  <!-- INFO -->
+  <div style="font-size:13px;margin-bottom:10px;line-height:1.6;">
+    <b>Nama Mesyuarat:</b> <span id="pdfMesyuarat"></span><br>
     <b>Tarikh:</b> <span id="pdfTarikh"></span>
-  </p>
+  </div>
 
-  <table style="width:100%;border-collapse:collapse;">
+  <!-- TABLE -->
+  <table style="width:100%;border-collapse:collapse;font-size:12px;">
     <thead>
-      <tr>
-        <th>Bil</th>
-        <th>Nama</th>
-        <th>Jawatan</th>
-        <th>Bahagian</th>
-        <th>Masa</th>
-        <th>Status</th>
+      <tr style="background:#f2f2f2;">
+        <th style="border:1px solid #000;padding:6px;">Bil</th>
+        <th style="border:1px solid #000;padding:6px;">Nama</th>
+        <th style="border:1px solid #000;padding:6px;">Jawatan</th>
+        <th style="border:1px solid #000;padding:6px;">Bahagian</th>
+        <th style="border:1px solid #000;padding:6px;">Masa</th>
+        <th style="border:1px solid #000;padding:6px;">Status</th>
       </tr>
     </thead>
     <tbody id="pdfTable"></tbody>
   </table>
 
-  <br><br>
-  <p style="text-align:right;">
-    Disediakan oleh: _______________________<br>
-    (MDS System)
-  </p>
+  <!-- JUMLAH HADIR -->
+  <div style="margin-top:10px;font-size:13px;">
+    <b>Jumlah Kehadiran:</b> <span id="totalHadir"></span> orang
+  </div>
+
+  <!-- FOOTER -->
+  <div style="margin-top:30px;font-size:11px;text-align:center;border-top:1px solid #000;padding-top:10px;">
+
+    Ini adalah cetakan komputer dan tidak memerlukan tandatangan.
+
+  </div>
 
 </div>
 
@@ -318,44 +335,67 @@ async function downloadPDF(){
 
   showLoading();
 
-  let data = await postAPI({
-    action:"report",
-    tarikh:tarikh,
-    mesyuarat:mesyuarat
-  });
+  try{
 
-  hideLoading();
+    let data = await postAPI({
+      action:"report",
+      tarikh:tarikh,
+      mesyuarat:mesyuarat
+    });
 
-  document.getElementById("pdfMesyuarat").innerText = mesyuarat;
-  document.getElementById("pdfTarikh").innerText = tarikh;
+    // ❗ tunggu render dulu (INI PENTING)
+    await new Promise(r => setTimeout(r, 300));
 
-  let html = "";
+    document.getElementById("pdfMesyuarat").innerText = mesyuarat;
+    document.getElementById("pdfTarikh").innerText = tarikh;
 
-  data.forEach((r,i)=>{
-    html += `
-      <tr>
-        <td>${i+1}</td>
-        <td>${r.nama}</td>
-        <td>${r.jawatan}</td>
-        <td>${r.bahagian}</td>
-        <td>${r.masa}</td>
-        <td>${r.status}</td>
-      </tr>
-    `;
-  });
+    let html = "";
+    let count = 0;
 
-  document.getElementById("pdfTable").innerHTML = html;
+    data.forEach((r,i)=>{
+      count++;
 
-  html2pdf()
-    .set({
-      margin:10,
-      filename:"MDS_Report.pdf",
-      image:{type:"jpeg",quality:0.98},
-      html2canvas:{scale:2},
-      jsPDF:{format:"a4"}
-    })
-    .from(document.getElementById("pdfArea"))
-    .outputPdf("dataurlnewwindow"); // VIEW ONLY
+      html += `
+        <tr>
+          <td style="border:1px solid #000;padding:6px;">${i+1}</td>
+          <td style="border:1px solid #000;padding:6px;">${r.nama || "-"}</td>
+          <td style="border:1px solid #000;padding:6px;">${r.jawatan || "-"}</td>
+          <td style="border:1px solid #000;padding:6px;">${r.bahagian || "-"}</td>
+          <td style="border:1px solid #000;padding:6px;">${r.masa || "-"}</td>
+          <td style="border:1px solid #000;padding:6px;">${r.status || "-"}</td>
+        </tr>
+      `;
+    });
+
+    document.getElementById("pdfTable").innerHTML = html;
+    document.getElementById("totalHadir").innerText = count;
+
+    // 🔥 PENTING: paksa visible sebelum export
+    const pdfArea = document.getElementById("pdfArea");
+    pdfArea.style.display = "block";
+
+    await new Promise(r => setTimeout(r, 500));
+
+    await html2pdf()
+      .set({
+        margin:10,
+        filename:"Laporan_MDS.pdf",
+        image:{type:"jpeg",quality:0.98},
+        html2canvas:{scale:2,useCORS:true},
+        jsPDF:{format:"a4",orientation:"portrait"}
+      })
+      .from(pdfArea)
+      .outputPdf("dataurlnewwindow");
+
+    // optional hide balik
+    pdfArea.style.display = "none";
+
+  }catch(err){
+    console.log(err);
+    alert("Gagal generate PDF");
+  }finally{
+    hideLoading();
+  }
 }
 
 </script>
