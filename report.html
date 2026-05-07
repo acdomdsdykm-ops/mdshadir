@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MDS Attendance Report System</title>
+<title>MDS Report System</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
 
@@ -86,7 +89,6 @@ th{background:#f2f2f2}
   border-radius:10px;
   display:none;
   z-index:2000;
-  pointer-events:auto;
 }
 
 /* LOADING */
@@ -101,7 +103,6 @@ th{background:#f2f2f2}
   align-items:center;
   flex-direction:column;
   z-index:1500;
-  pointer-events:none;
 }
 
 .spinner{
@@ -122,14 +123,14 @@ th{background:#f2f2f2}
 
 <body>
 
-<h2>📄 MDS Attendance Report System</h2>
+<h2>📄 MDS Report System</h2>
 
 <div class="box">
   <label>Tarikh:</label><br>
   <input type="date" id="tarikh"><br><br>
 
   <button onclick="loadMesyuarat()">🔍 Cari Report</button>
-  <button onclick="downloadPDF()">📥 PDF</button>
+  <button onclick="downloadPDF()">📄 Generate PDF</button>
 </div>
 
 <div class="info">
@@ -154,7 +155,7 @@ th{background:#f2f2f2}
 </table>
 </div>
 
-<!-- POPUP -->
+<!-- POPUP MESYUARAT -->
 <div id="popup" class="popup">
 <h3>Pilih Mesyuarat</h3>
 <div id="list"></div>
@@ -167,19 +168,53 @@ th{background:#f2f2f2}
   <div>Loading...</div>
 </div>
 
+<!-- PDF TEMPLATE -->
+<div id="pdfArea" style="display:none;">
+
+  <div style="text-align:center;margin-bottom:20px;">
+    <img src="mds.png" style="width:80px;">
+    <h2>MAJLIS DAERAH SIMUNJAN</h2>
+    <p style="font-size:12px;">
+      Lot 805, Gunong Ngeli New Service Centre, 94800 Simunjan, Sarawak
+    </p>
+    <hr>
+  </div>
+
+  <h3 style="text-align:center;">LAPORAN KEHADIRAN MESYUARAT</h3>
+
+  <p>
+    <b>Mesyuarat:</b> <span id="pdfMesyuarat"></span><br>
+    <b>Tarikh:</b> <span id="pdfTarikh"></span>
+  </p>
+
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr>
+        <th>Bil</th>
+        <th>Nama</th>
+        <th>Jawatan</th>
+        <th>Bahagian</th>
+        <th>Masa</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="pdfTable"></tbody>
+  </table>
+
+  <br><br>
+  <p style="text-align:right;">
+    Disediakan oleh: _______________________<br>
+    (MDS System)
+  </p>
+
+</div>
+
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbxD-nOE0LkUQj6w-N_16PB6O8qwkHQjKg84RAusY2BLduuTEbxfj31m3eqcFQRwlgWb7Q/exec";
+const API = "https://script.google.com/macros/s/AKfycbxek5WE86oxs-YPlaEGJrqi2rVGqDuMo-uoddAoHC-N6P0ewOg4T_DWkcVqVhaeamNbgA/exec";
 
 const popup = document.getElementById("popup");
 
-/* LOGIN CHECK */
-if(sessionStorage.getItem("mds_login") !== "true"){
-  alert("Sila login dahulu");
-  window.location.href="login.html";
-}
-
-/* LOADING SAFE */
 function showLoading(){
   document.getElementById("loading").style.display="flex";
 }
@@ -188,38 +223,22 @@ function hideLoading(){
   document.getElementById("loading").style.display="none";
 }
 
-/* SAFE FETCH (CORS FRIENDLY) */
 async function postAPI(payload){
-
-  try{
-    let res = await fetch(API,{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/x-www-form-urlencoded"
-      },
-      body:new URLSearchParams(payload)
-    });
-
-    return await res.json();
-
-  }catch(err){
-    console.log(err);
-    return [];
-  }
+  let res = await fetch(API,{
+    method:"POST",
+    headers:{"Content-Type":"application/x-www-form-urlencoded"},
+    body:new URLSearchParams(payload)
+  });
+  return await res.json();
 }
 
 /* LOAD MESYUARAT */
 async function loadMesyuarat(){
 
   let tarikh = document.getElementById("tarikh").value;
-  if(!tarikh){
-    alert("Sila pilih tarikh");
-    return;
-  }
+  if(!tarikh){ alert("Pilih tarikh"); return; }
 
   showLoading();
-
-  document.getElementById("tarikhInfo").innerText = formatDate(tarikh);
 
   let data = await postAPI({
     action:"listMesyuarat",
@@ -231,31 +250,73 @@ async function loadMesyuarat(){
   let list = document.getElementById("list");
   list.innerHTML = "";
 
-  if(!data || data.length === 0){
+  if(!data.length){
     list.innerHTML = "<p>Tiada mesyuarat</p>";
     popup.style.display="block";
     return;
   }
 
   data.forEach(m=>{
-    let btn = document.createElement("button");
-    btn.innerText = m;
-    btn.onclick = ()=>loadReport(m);
-    list.appendChild(btn);
+    let b = document.createElement("button");
+    b.innerText = m;
+    b.onclick = ()=>loadReport(m);
+    list.appendChild(b);
   });
 
   popup.style.display="block";
 }
 
+function closePopup(){
+  popup.style.display="none";
+}
+
 /* REPORT */
-async function loadReport(mesyuarat){
+async function loadReport(m){
 
   popup.style.display="none";
   showLoading();
 
-  document.getElementById("mesyuarat").innerText = mesyuarat;
+  document.getElementById("mesyuarat").innerText = m;
+  let tarikh = document.getElementById("tarikh").value;
+
+  let data = await postAPI({
+    action:"report",
+    tarikh:tarikh,
+    mesyuarat:m
+  });
+
+  hideLoading();
+
+  let tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+
+  data.forEach((r,i)=>{
+    tbody.innerHTML += `
+      <tr>
+        <td>${i+1}</td>
+        <td>${r.nama}</td>
+        <td>${r.jawatan}</td>
+        <td>${r.bahagian}</td>
+        <td>${r.tarikh}</td>
+        <td>${r.masa}</td>
+        <td>${r.status}</td>
+      </tr>
+    `;
+  });
+}
+
+/* PDF GENERATE */
+async function downloadPDF(){
 
   let tarikh = document.getElementById("tarikh").value;
+  let mesyuarat = document.getElementById("mesyuarat").innerText;
+
+  if(!tarikh || mesyuarat === "-"){
+    alert("Pilih data");
+    return;
+  }
+
+  showLoading();
 
   let data = await postAPI({
     action:"report",
@@ -265,76 +326,36 @@ async function loadReport(mesyuarat){
 
   hideLoading();
 
-  let tbody = document.getElementById("tbody");
-  tbody.innerHTML = "";
-
-  if(!data || data.length === 0){
-    tbody.innerHTML = "<tr><td colspan='7'>Tiada data</td></tr>";
-    return;
-  }
+  document.getElementById("pdfMesyuarat").innerText = mesyuarat;
+  document.getElementById("pdfTarikh").innerText = tarikh;
 
   let html = "";
 
   data.forEach((r,i)=>{
     html += `
-    <tr>
-      <td>${i+1}</td>
-      <td>${r.nama || "-"}</td>
-      <td>${r.jawatan || "-"}</td>
-      <td>${r.bahagian || "-"}</td>
-      <td>${r.tarikh || "-"}</td>
-      <td>${r.masa || "-"}</td>
-      <td>${r.status || "-"}</td>
-    </tr>`;
+      <tr>
+        <td>${i+1}</td>
+        <td>${r.nama}</td>
+        <td>${r.jawatan}</td>
+        <td>${r.bahagian}</td>
+        <td>${r.masa}</td>
+        <td>${r.status}</td>
+      </tr>
+    `;
   });
 
-  tbody.innerHTML = html;
-}
+  document.getElementById("pdfTable").innerHTML = html;
 
-/* PDF */
-async function downloadPDF(){
-
-  let tarikh = document.getElementById("tarikh").value;
-  let mesyuarat = document.getElementById("mesyuarat").innerText;
-
-  if(!tarikh || mesyuarat === "-"){
-    alert("Sila pilih tarikh & mesyuarat");
-    return;
-  }
-
-  showLoading();
-
-  let res = await postAPI({
-    action:"pdf",
-    tarikh:tarikh,
-    mesyuarat:mesyuarat
-  });
-
-  hideLoading();
-
-  if(res && res.url){
-    window.open(res.url,"_blank");
-  }else{
-    alert("Gagal generate PDF");
-  }
-}
-
-/* FORMAT DATE FIXED */
-function formatDate(d){
-
-  if(!d) return "";
-
-  if(d.includes("-")){
-    let p = d.split("-");
-    return `${p[2]}/${p[1]}/${p[0]}`;
-  }
-
-  return d;
-}
-
-/* POPUP CLOSE FIX */
-function closePopup(){
-  document.getElementById("popup").style.display="none";
+  html2pdf()
+    .set({
+      margin:10,
+      filename:"MDS_Report.pdf",
+      image:{type:"jpeg",quality:0.98},
+      html2canvas:{scale:2},
+      jsPDF:{format:"a4"}
+    })
+    .from(document.getElementById("pdfArea"))
+    .outputPdf("dataurlnewwindow"); // VIEW ONLY
 }
 
 </script>
