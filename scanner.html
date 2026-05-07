@@ -8,17 +8,20 @@
 
 <style>
 body{
-  font-family:Arial;
+  font-family:Arial,sans-serif;
   background:#022c22;
-  color:white;
+  color:#fff;
   text-align:center;
   margin:0;
 }
 
-/* INFO BOX */
+h2{
+  margin:14px 0 8px;
+}
+
 .info{
-  background:white;
-  color:black;
+  background:#fff;
+  color:#000;
   margin:10px auto;
   padding:12px;
   width:340px;
@@ -28,13 +31,11 @@ body{
   line-height:1.6;
 }
 
-/* SCANNER */
 #reader{
   width:320px;
   margin:10px auto;
 }
 
-/* STATUS */
 #statusBox{
   width:300px;
   margin:10px auto;
@@ -48,7 +49,6 @@ body{
 .success{background:#2563eb;}
 .error{background:#dc2626;}
 
-/* TABLE */
 .table-box{
   margin:15px;
   overflow-x:auto;
@@ -56,8 +56,8 @@ body{
 
 table{
   width:100%;
-  background:white;
-  color:black;
+  background:#fff;
+  color:#000;
   border-collapse:collapse;
 }
 
@@ -69,22 +69,24 @@ th,td{
 
 th{
   background:#16a34a;
-  color:white;
+  color:#fff;
 }
 
-/* POPUP */
 .popup{
   position:fixed;
-  top:50%;left:50%;
+  top:50%;
+  left:50%;
   transform:translate(-50%,-50%);
-  background:white;
-  color:black;
+  background:#fff;
+  color:#000;
   padding:20px;
   border-radius:12px;
   opacity:0;
   visibility:hidden;
-  transition:0.3s;
+  transition:0.25s;
+  min-width:220px;
 }
+
 .popup.show{
   opacity:1;
   visibility:visible;
@@ -92,11 +94,12 @@ th{
 
 button{
   background:red;
-  color:white;
-  padding:10px;
+  color:#fff;
+  padding:10px 14px;
   border:none;
   border-radius:8px;
   margin-top:10px;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -114,33 +117,42 @@ button{
 <button onclick="back()">⬅️ Kembali</button>
 
 <div class="table-box">
-<table>
-<thead>
-<tr>
-<th>Nama</th>
-<th>Jawatan</th>
-<th>Bahagian</th>
-<th>Masa</th>
-<th>Status</th>
-</tr>
-</thead>
-<tbody id="tbody"></tbody>
-</table>
+  <table>
+    <thead>
+      <tr>
+        <th>Nama</th>
+        <th>Jawatan</th>
+        <th>Bahagian</th>
+        <th>Masa</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
 </div>
 
 <div id="popup" class="popup">
-<h3 style="color:green;">✔ Berjaya</h3>
-<p id="pNama" style="font-weight:bold;"></p>
-<p id="pJawatan" style="font-weight:bold;"></p>
+  <h3 style="color:green;">✔ Berjaya</h3>
+  <p id="pNama" style="font-weight:bold;"></p>
+  <p id="pJawatan" style="font-weight:bold;"></p>
 </div>
 
 <script>
-
-const API = "https://script.google.com/macros/s/AKfycbyFMfJD6j9lbE8e0uo6n3OUZBL08AhWkkoUiWMFYBtXXMnugwYYysr9CNkouBKdD-nefg/exec";
+const API = "https://script.google.com/macros/s/AKfycbymlPfK0KJspXEi_yP304w6rAeA-tjM8FdJt4S9gaujTfmiL-ERp6j-XBaPQcVypket_w/exec";
 
 let data = JSON.parse(sessionStorage.getItem("mds_data") || "{}");
 
-let scanner;
+if (!data.mesyuarat) {
+  data = {
+    mesyuarat: "Mesyuarat MDS",
+    tarikh: "",
+    mula: "",
+    tamat: "",
+    tempat: ""
+  };
+}
+
+let scanner = null;
 let lock = false;
 
 const beep = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
@@ -152,132 +164,162 @@ const pNama = document.getElementById("pNama");
 const pJawatan = document.getElementById("pJawatan");
 const infoBox = document.getElementById("infoBox");
 
-/* ================= CHECK SESSION ================= */
-if(!data.mesyuarat){
-  alert("Tiada data mesyuarat");
-  window.location.href="dashboard.html";
-}
-
-/* ================= INFO ================= */
 infoBox.innerHTML = `
 <b>📌 Nama Mesyuarat:</b> ${data.mesyuarat}<br>
-📅 <b>Tarikh:</b> ${data.tarikh}<br>
-⏰ <b>Masa:</b> ${data.mula} - ${data.tamat}<br>
-📍 <b>Tempat:</b> ${data.tempat}
+📅 <b>Tarikh:</b> ${data.tarikh || "-"}<br>
+⏰ <b>Masa:</b> ${data.mula || "-"} - ${data.tamat || "-"}<br>
+📍 <b>Tempat:</b> ${data.tempat || "-"}
 `;
 
-/* ================= ANTI DOUBLE SCAN ================= */
 function scanKey(id){
   return `mds_${id}_${data.tarikh}_${data.mesyuarat}`;
 }
 
 function alreadyScanned(id){
-  return localStorage.getItem(scanKey(id));
+  return localStorage.getItem(scanKey(id)) !== null;
 }
 
 function markScanned(id){
   localStorage.setItem(scanKey(id),"1");
 }
 
-/* ================= STATUS ================= */
 function setStatus(type,msg){
   statusBox.className = type;
   statusBox.innerText = msg;
 }
 
-/* ================= TABLE ================= */
 function addRow(res){
-  let tr = document.createElement("tr");
+  const tr = document.createElement("tr");
 
   tr.innerHTML = `
-  <td><b>${res.nama}</b></td>
-  <td><b>${res.jawatan}</b></td>
-  <td>${res.bahagian || "-"}</td>
-  <td>${res.masa}</td>
-  <td>${res.status}</td>
+    <td><b>${res.nama || ""}</b></td>
+    <td>${res.jawatan || "-"}</td>
+    <td>${res.bahagian || "-"}</td>
+    <td>${res.masa || ""}</td>
+    <td>${res.status || "Hadir"}</td>
   `;
 
   tbody.prepend(tr);
 }
 
-/* ================= SAFE RESTART ================= */
 function restart(){
-  setTimeout(startQR, 600);
+  setTimeout(() => {
+    startQR();
+  }, 700);
 }
 
-/* ================= QR SCANNER ================= */
+async function stopScanner(){
+  if (scanner) {
+    try {
+      await scanner.stop();
+    } catch(e) {}
+    try {
+      await scanner.clear();
+    } catch(e) {}
+    scanner = null;
+  }
+}
+
 function startQR(){
+
+  if (scanner || lock) return;
 
   scanner = new Html5Qrcode("reader");
 
   scanner.start(
     { facingMode:"environment" },
     { fps:10, qrbox:250 },
-    text => {
 
-      if(lock) return;
+    async text => {
+
+      if (lock) return;
       lock = true;
 
       setStatus("processing","🟡 Memproses...");
 
-      scanner.stop().catch(()=>{});
+      await stopScanner();
 
-      if(alreadyScanned(text)){
+      if (alreadyScanned(text)) {
         setStatus("error","⚠ Sudah scan");
-        lock=false;
+        lock = false;
         restart();
         return;
       }
 
-      if (action === "scan") {
+      fetch(API,{
+        method:"POST",
+        body:new URLSearchParams({
+          action:"scan",
+          nama:text,
+          jawatan:"-",
+          bahagian:"-",
+          tarikh:data.tarikh,
+          mesyuarat:data.mesyuarat
+        })
+      })
+      .then(r => r.text())
+      .then(raw => {
 
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_HADIR);
+        console.log("RAW RESPONSE:", raw);
 
-  const nama = (e.parameter.nama || "").trim();
-  const jawatan = e.parameter.jawatan || "-";
-  const bahagian = e.parameter.bahagian || "-";
-  const tarikh = e.parameter.tarikh || "";
-  const mesyuarat = e.parameter.mesyuarat || "";
+        let res;
+        try{
+          res = JSON.parse(raw);
+        }catch(err){
+          throw new Error("Response bukan JSON");
+        }
 
-  if (!nama) {
-    return output({
-      status: "error",
-      message: "Nama kosong"
-    });
-  }
+        if (res.status === "error") {
+          throw new Error(res.message || "Ralat server");
+        }
 
-  const masa = Utilities.formatDate(new Date(), "Asia/Kuching", "HH:mm:ss");
+        markScanned(text);
 
-  sheet.appendRow([
-    nama,
-    jawatan,
-    bahagian,
-    tarikh,
-    mesyuarat,
-    masa,
-    "Hadir"
-  ]);
+        pNama.innerText = res.nama || text;
+        pJawatan.innerText = res.jawatan || "-";
 
-  return output({
-    status: "success",
-    nama: nama,
-    jawatan: jawatan,
-    bahagian: bahagian,
-    masa: masa
+        popup.classList.add("show");
+
+        addRow({
+          nama: res.nama || text,
+          jawatan: res.jawatan || "-",
+          bahagian: res.bahagian || "-",
+          masa: res.masa || "",
+          status: "Hadir"
+        });
+
+        setStatus("success","✔ Berjaya");
+
+        beep.play().catch(()=>{});
+
+        setTimeout(() => {
+          popup.classList.remove("show");
+          setStatus("ready","🟢 Sedia scan");
+          lock = false;
+          restart();
+        }, 1200);
+
+      })
+      .catch(err => {
+        console.log("SCAN ERROR:", err);
+        setStatus("error","❌ " + err.message);
+        lock = false;
+        restart();
+      });
+    }
+  ).catch(err => {
+    console.log("START ERROR:", err);
+    setStatus("error","❌ Kamera gagal dibuka");
+    scanner = null;
+    lock = false;
   });
 }
 
-    }
-  );
-}
-
-/* ================= BACK ================= */
 function back(){
-  window.location.href="dashboard.html";
+  window.location.href = "dashboard.html";
 }
 
 startQR();
-
 </script>
 
 </body>
