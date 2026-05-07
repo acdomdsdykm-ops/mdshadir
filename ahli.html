@@ -2,7 +2,7 @@
 <html lang="ms">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kad Digital Staf MDS</title>
+<title>Kad Digital Staf MDS Ultra</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
@@ -18,7 +18,6 @@ body{
   align-items:center;
 }
 
-/* CARD WRAPPER */
 .card{ width:370px; }
 
 /* HEADER */
@@ -33,14 +32,12 @@ body{
   box-shadow:0 20px 50px rgba(0,0,0,0.35);
 }
 
-/* HEADER LOGO */
 .logo{
   width:70px;
   margin-bottom:6px;
   filter:brightness(0) invert(1);
 }
 
-/* HEADER TEXT */
 .agency{
   font-size:14px;
   font-weight:900;
@@ -56,7 +53,6 @@ body{
   margin-top:6px;
 }
 
-/* BUTTON */
 .main-btn{
   margin-top:15px;
   width:100%;
@@ -69,7 +65,7 @@ body{
   cursor:pointer;
 }
 
-/* ================= ID CARD ================= */
+/* ================= CARD ================= */
 .id-card{
   margin-top:18px;
   padding:22px;
@@ -78,70 +74,77 @@ body{
   position:relative;
   overflow:hidden;
 
-  /* emboss frame */
   box-shadow:
     inset 0 0 0 1px rgba(255,255,255,0.4),
-    inset 0 0 20px rgba(0,0,0,0.25),
+    inset 0 0 25px rgba(0,0,0,0.25),
     0 25px 60px rgba(0,0,0,0.5);
 }
 
-/* WATERMARK (lebih jelas sikit) */
+/* WATERMARK (soft premium) */
 .id-card::before{
   content:"";
   position:absolute;
-  width:280px;
-  height:280px;
-  background:url('mds_logo.png') no-repeat center;
+  width:320px;
+  height:320px;
+  background:url('mds.png') no-repeat center;
   background-size:contain;
-  opacity:0.12;
+  opacity:0.10;
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
   pointer-events:none;
 }
 
-/* HOLOGRAM STRIPE */
+/* 🌈 HOLOGRAM REAL MYKAD STYLE */
 .id-card::after{
   content:"";
   position:absolute;
-  top:-60%;
-  left:-30%;
-  width:60%;
-  height:220%;
+  top:-90%;
+  left:-50%;
+  width:90%;
+  height:280%;
+
   background:linear-gradient(
     120deg,
     transparent 0%,
-    rgba(255,255,255,0.12) 30%,
-    rgba(0,255,255,0.20) 50%,
-    rgba(255,255,255,0.12) 70%,
+    rgba(255,0,255,0.16) 18%,
+    rgba(0,255,255,0.22) 38%,
+    rgba(255,255,0,0.20) 52%,
+    rgba(0,255,150,0.22) 70%,
+    rgba(255,0,120,0.15) 85%,
     transparent 100%
   );
+
   transform:rotate(25deg);
-  animation:holo 4s linear infinite;
+  animation:holoMove 4s linear infinite;
+  filter:blur(1px);
   pointer-events:none;
 }
 
-@keyframes holo{
-  0%{transform:translateX(-120%) rotate(25deg);}
-  100%{transform:translateX(220%) rotate(25deg);}
+@keyframes holoMove{
+  0%{transform:translateX(-150%) rotate(25deg);}
+  100%{transform:translateX(260%) rotate(25deg);}
 }
 
-/* LOGO BULAT PUTIH */
+/* EMBOSS LOGO */
 .id-card-logo-wrap{
-  width:70px;
-  height:70px;
+  width:75px;
+  height:75px;
   background:#fff;
   border-radius:50%;
   display:flex;
-  justify-content:center;
   align-items:center;
+  justify-content:center;
   margin:0 auto 10px auto;
-  box-shadow:0 6px 15px rgba(0,0,0,0.25);
+
+  box-shadow:
+    inset 2px 2px 6px rgba(255,255,255,0.9),
+    inset -4px -4px 8px rgba(0,0,0,0.25),
+    0 10px 18px rgba(0,0,0,0.25);
 }
 
-.id-card-logo{
-  width:45px;
-  height:auto;
+.id-card-logo-wrap img{
+  width:48px;
 }
 
 /* TITLE */
@@ -154,16 +157,12 @@ body{
   font-size:12px;
   font-weight:700;
   color:#fff;
-  text-shadow:0 2px 5px rgba(0,0,0,0.5);
 }
 
-/* LABEL BLUE */
 .section-title{
   font-size:14px;
   font-weight:900;
   color:#0b2a4a;
-  letter-spacing:1.5px;
-  text-shadow:0 1px 0 rgba(255,255,255,0.6);
 }
 
 /* PROFILE */
@@ -171,7 +170,6 @@ body{
   display:flex;
   flex-direction:column;
   align-items:center;
-  text-align:center;
   margin-bottom:12px;
 }
 
@@ -183,26 +181,24 @@ body{
   border:2px solid rgba(255,255,255,0.4);
 }
 
-/* NAME */
 .name-box{
   margin-top:10px;
   font-size:20px;
   font-weight:900;
   padding:10px 12px;
   border-radius:12px;
-  background:rgba(255,255,255,0.3);
+  background:rgba(255,255,255,0.35);
   color:#000;
 }
 
-/* ================= INFO GRID KEMAS ================= */
+/* INFO */
 .bottom-row{
   display:flex;
   gap:12px;
-  align-items:flex-start;
 }
 
 .qr-box{
-  background:white;
+  background:#fff;
   padding:8px;
   border-radius:12px;
   flex:0 0 110px;
@@ -215,38 +211,28 @@ body{
   height:100px;
 }
 
-/* GRID INFO SEKATA */
-.info{
-  flex:1;
-}
+.info{ flex:1; }
 
 .row{
   display:grid;
   grid-template-columns:90px 1fr;
-  align-items:center;
   padding:6px 0;
   border-bottom:1px solid rgba(0,0,0,0.15);
-  gap:8px;
 }
 
-.row:last-child{
-  border-bottom:none;
-}
+.row:last-child{ border-bottom:none; }
 
 .label{
   font-size:10px;
-  text-transform:uppercase;
   color:#000;
   opacity:0.75;
-  letter-spacing:0.5px;
+  text-transform:uppercase;
 }
 
 .value{
   font-size:12px;
   font-weight:800;
   color:#000;
-  text-align:left;
-  word-break:break-word;
 }
 
 /* NOTE */
@@ -255,19 +241,6 @@ body{
   font-size:11px;
   text-align:center;
   color:#000;
-}
-
-/* RESET */
-.reset-btn{
-  margin-top:14px;
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  background:#3b82f6;
-  color:white;
-  font-weight:700;
-  cursor:pointer;
 }
 
 /* LOADING */
@@ -323,12 +296,11 @@ body{
 
   </div>
 
-  <!-- ID CARD -->
-  <div class="id-card" id="idCard">
+  <!-- CARD -->
+  <div class="id-card" id="idCard" style="display:none;">
 
-    <!-- LOGO BULAT -->
     <div class="id-card-logo-wrap">
-      <img src="mds.png" class="id-card-logo">
+      <img src="mds.png">
     </div>
 
     <div class="title-wrap">
@@ -353,11 +325,7 @@ body{
 
     </div>
 
-    <div class="note">
-      Sila imbas QR untuk rekod kehadiran rasmi.
-    </div>
-
-    <button class="reset-btn" onclick="location.reload()">🔄 Semakan Semula</button>
+    <div class="note">Sila imbas QR untuk rekod kehadiran rasmi.</div>
 
   </div>
 
@@ -371,11 +339,6 @@ async function searchIC(){
 
   let ic = prompt("Masukkan 4 digit terakhir IC:");
   if(!ic) return;
-
-  if(!/^\d{4}$/.test(ic)){
-    alert("Sila masukkan 4 digit sahaja");
-    return;
-  }
 
   document.getElementById("loading").style.display="flex";
 
@@ -391,7 +354,6 @@ async function searchIC(){
 
     if(!data.success){
       alert("Data tidak dijumpai");
-      location.reload();
       return;
     }
 
@@ -402,14 +364,13 @@ async function searchIC(){
     document.getElementById("bahagian").innerText=data.bahagian;
     document.getElementById("idstaf").innerText=data.id;
 
-    document.getElementById("staffPhoto").src =
-      data.gambar || "https://via.placeholder.com/100x120";
+    document.getElementById("staffPhoto").src=data.gambar || "https://via.placeholder.com/100x120";
 
-    let qr=`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(data.id)}&t=${Date.now()}`;
+    let qr=`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(data.id)}`;
     document.getElementById("qrcode").innerHTML=`<img src="${qr}">`;
 
   }catch(e){
-    alert("Ralat server / API tidak aktif");
+    alert("Ralat server");
   }finally{
     document.getElementById("loading").style.display="none";
   }
