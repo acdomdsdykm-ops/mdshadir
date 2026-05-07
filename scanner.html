@@ -1,190 +1,282 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scanner MDS</title>
-
+<title>Scanner Kehadiran MDS</title>
 <script src="https://unpkg.com/html5-qrcode"></script>
-
 <style>
 body{
-  font-family:Arial;
+  font-family:Arial,sans-serif;
   background:#022c22;
   color:#fff;
   text-align:center;
   margin:0;
 }
-
+h2{margin:14px 0 8px;}
+.info{
+  background:#fff;
+  color:#000;
+  margin:10px auto;
+  padding:12px;
+  width:340px;
+  max-width:92%;
+  border-radius:12px;
+  font-size:13px;
+  text-align:left;
+  line-height:1.6;
+}
 #reader{
   width:320px;
+  max-width:92%;
   margin:10px auto;
 }
-
 #statusBox{
   width:300px;
+  max-width:88%;
   margin:10px auto;
   padding:12px;
   border-radius:10px;
   font-weight:bold;
 }
-
 .ready{background:#16a34a;}
 .processing{background:#f59e0b;}
 .success{background:#2563eb;}
 .error{background:#dc2626;}
-
-.popup{
+.modal{
   position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  background:#fff;
-  color:#000;
-  padding:18px;
-  border-radius:12px;
-  width:260px;
-  opacity:0;
-  visibility:hidden;
+  inset:0;
+  background:rgba(0,0,0,.65);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
 }
-
-.popup.show{
-  opacity:1;
-  visibility:visible;
+.popup{
+  width:320px;
+  max-width:90%;
+  background:linear-gradient(135deg,#0f766e,#16a34a);
+  border-radius:22px;
+  padding:22px;
+  box-shadow:0 25px 70px rgba(0,0,0,.45);
+  position:relative;
+  overflow:hidden;
+}
+.popup::before{
+  content:"";
+  position:absolute;
+  inset:-40px;
+  background:radial-gradient(circle,rgba(255,255,255,.08),transparent 60%);
+}
+.popup-inner{position:relative;z-index:2;}
+.badge{
+  font-size:12px;
+  font-weight:700;
+  letter-spacing:1px;
+  opacity:.9;
+}
+.avatar{
+  width:92px;
+  height:92px;
+  border-radius:50%;
+  object-fit:cover;
+  border:4px solid rgba(255,255,255,.28);
+  margin:12px auto;
+  display:block;
+  background:#fff;
+}
+.name{
+  font-size:20px;
+  font-weight:800;
+  margin:8px 0 4px;
+}
+.meta{
+  font-size:13px;
+  opacity:.95;
+  margin:4px 0;
+}
+.close-btn{
+  margin-top:14px;
+  padding:9px 16px;
+  border:none;
+  border-radius:10px;
+  background:#111827;
+  color:#fff;
+  cursor:pointer;
 }
 </style>
 </head>
-
 <body>
 
-<h2>📷 Scanner Kehadiran</h2>
+<h2>📷 Scanner Kehadiran MDS</h2>
 
+<div class="info" id="infoBox">Loading info...</div>
 <div id="statusBox" class="ready">🟢 Sedia scan</div>
-
 <div id="reader"></div>
 
-<div id="popup" class="popup">
-  <h3>✔ Berjaya</h3>
-  <p id="nama"></p>
-  <p id="jawatan"></p>
-  <p id="bahagian"></p>
+<div class="modal" id="modal">
+  <div class="popup">
+    <div class="popup-inner">
+      <div class="badge">REKOD KEHADIRAN BERJAYA</div>
+      <img id="mGambar" class="avatar" src="https://via.placeholder.com/90" alt="Staf">
+      <div class="name" id="mNama">-</div>
+      <div class="meta" id="mJawatan">-</div>
+      <div class="meta" id="mBahagian">-</div>
+      <div class="meta" id="mMasa">-</div>
+      <button class="close-btn" onclick="closeModal()">Tutup</button>
+    </div>
+  </div>
 </div>
 
 <script>
+const API = "https://script.google.com/macros/s/AKfycbwfPTXSGn4qkLichW9upAO25XQ7lk3JQa57i8lJ9GOEp483J-JbBH7_3jWQqgg5rYM12A/exec";
 
-const API = "https://script.google.com/macros/s/AKfycbyVmoL7dvbMRm8dnpeKH8shzGBhgYKfJ2fFPkVBI45fpTab90IJFJOCJjy3NTvB8G0gAQ/exec";
+let data = JSON.parse(sessionStorage.getItem("mds_data") || "{}");
+data = {
+  mesyuarat: data.mesyuarat || "Mesyuarat MDS",
+  tarikh: data.tarikh || "-",
+  mula: data.mula || "-",
+  tamat: data.tamat || "-",
+  tempat: data.tempat || "-"
+};
 
-let scanner;
+document.getElementById("infoBox").innerHTML = `
+<b>📌 Mesyuarat:</b> ${data.mesyuarat}<br>
+📅 <b>Tarikh:</b> ${data.tarikh}<br>
+⏰ <b>Masa:</b> ${data.mula} - ${data.tamat}<br>
+📍 <b>Tempat:</b> ${data.tempat}`;
+
+let scanner = null;
 let lock = false;
 
-const statusBox = document.getElementById("statusBox");
-
-function setStatus(c,t){
-  statusBox.className = c;
-  statusBox.innerText = t;
+function setStatus(type,msg){
+  const box = document.getElementById("statusBox");
+  box.className = type;
+  box.innerText = msg;
 }
 
-function showPopup(data){
-
-  document.getElementById("nama").innerText = "Nama: " + (data.nama || "-");
-  document.getElementById("jawatan").innerText = "Jawatan: " + (data.jawatan || "-");
-  document.getElementById("bahagian").innerText = "Bahagian: " + (data.bahagian || "-");
-
-  document.getElementById("popup").classList.add("show");
-
-  setTimeout(()=>{
-    document.getElementById("popup").classList.remove("show");
-  },1500);
+function scanKey(id){
+  return `mds_${id}_${data.tarikh}_${data.mesyuarat}`;
 }
 
-/* ================= CAMERA ================= */
+function alreadyScanned(id){
+  return localStorage.getItem(scanKey(id));
+}
+
+function markScanned(id){
+  localStorage.setItem(scanKey(id), "1");
+}
+
 function startQR(){
+  if(scanner || lock) return;
 
   scanner = new Html5Qrcode("reader");
 
   Html5Qrcode.getCameras().then(devices => {
-
     if(!devices.length){
-      setStatus("error","Kamera tidak jumpa");
+      setStatus("error","❌ Kamera tidak dijumpai");
+      scanner = null;
       return;
     }
 
-    let cam = devices[0];
+    const cam = devices.find(d => d.label.toLowerCase().includes("back")) || devices[0];
 
     scanner.start(
       cam.id,
       { fps:10, qrbox:250 },
       onScan
-    );
-
+    ).catch(() => {
+      setStatus("error","❌ Kamera gagal dibuka");
+      scanner = null;
+    });
+  }).catch(() => {
+    setStatus("error","❌ Kamera gagal dibuka");
+    scanner = null;
   });
-
 }
 
-/* ================= SCAN ================= */
-function onScan(text){
+async function stopQR(){
+  if(!scanner) return;
+  try { await scanner.stop(); } catch(e){}
+  try { await scanner.clear(); } catch(e){}
+  scanner = null;
+}
 
+async function onScan(text){
   if(lock) return;
   lock = true;
 
-  setStatus("processing","🟡 Memproses...");
+  const qr = String(text || "").trim();
 
-  scanner.stop().catch(()=>{});
+  if(alreadyScanned(qr)){
+    setStatus("error","⚠ Duplicate scan");
+    lock = false;
+    setTimeout(() => {
+      setStatus("ready","🟢 Sedia scan");
+    }, 1200);
+    return;
+  }
+
+  setStatus("processing","🟡 Memproses...");
+  await stopQR();
 
   fetch(API, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
+    },
     body: new URLSearchParams({
       action: "scan",
-      nama: text
-    })
+      nama: qr,
+      tarikh: data.tarikh,
+      mesyuarat: data.mesyuarat
+    }).toString()
   })
-  .then(r => r.json())
-  .then(res => {
-
-    console.log(res);
-
-    console.log("QR:", text);
+  .then(r => r.text())
+  .then(raw => {
+    const res = JSON.parse(raw);
 
     if(res.status === "error"){
-      throw new Error(res.message);
+      throw new Error(res.message || "Ralat");
     }
 
+    markScanned(qr);
     setStatus("success","✔ Berjaya");
+    showModal(res);
 
-    showPopup(res);
-
-    setTimeout(()=>{
-      lock = false;
-      setStatus("ready","🟢 Sedia scan");
-      startQR();
-    },1200);
-
+    setStatus("ready","🟢 Sedia scan");
   })
   .catch(err => {
+    setStatus("error", "❌ " + err.message);
+    lock = false;
+    setTimeout(() => {
+      setStatus("ready","🟢 Sedia scan");
+      startQR();
+    }, 1500);
+  });
+}
 
-  console.log(err);
+function showModal(res){
+  document.getElementById("mNama").innerText = res.nama || "-";
+  document.getElementById("mJawatan").innerText = res.jawatan || "-";
+  document.getElementById("mBahagian").innerText = res.bahagian || "-";
+  document.getElementById("mMasa").innerText = "Masa: " + (res.masa || "-");
 
-  setStatus("error","❌ " + err.message);
+  const img = res.gambar && String(res.gambar).startsWith("http")
+    ? res.gambar
+    : "https://via.placeholder.com/90";
 
-  if(err.message.includes("tidak dijumpai")){
-    showPopup({
-      nama:"TIADA DATA",
-      jawatan:"Semak QR",
-      bahagian:"ID tidak wujud"
-    },"ERROR");
-  }
+  document.getElementById("mGambar").src = img;
+  document.getElementById("modal").style.display = "flex";
+}
 
+function closeModal(){
+  document.getElementById("modal").style.display = "none";
   lock = false;
-
-  setTimeout(()=>{
-    setStatus("ready","🟢 Sedia scan");
-    startQR();
-  },1500);
-});
-
+  startQR();
 }
 
 startQR();
-
 </script>
 
 </body>
