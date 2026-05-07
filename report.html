@@ -217,10 +217,19 @@ th{background:#f2f2f2}
     <b>Jumlah Kehadiran:</b> <span id="totalHadir"></span> orang
   </div>
 
-  <!-- FOOTER -->
-  <div style="margin-top:30px;font-size:11px;text-align:center;border-top:1px solid #000;padding-top:10px;">
+  <br><br>
 
-    Ini adalah cetakan komputer dan tidak memerlukan tandatangan.
+<div style="text-align:right;font-size:12px;">
+  <p><b>Disediakan oleh:</b> MDS Attendance Digital System</p>
+  <p><b>Dicetak oleh:</b> <span id="printUser">-</span></p>
+  <p><b>Tarikh cetakan:</b> <span id="printTime">-</span></p>
+</div>
+
+<br>
+
+<div style="text-align:center;font-size:11px;margin-top:10px;">
+  Ini adalah cetakan komputer dan tidak memerlukan tandatangan.
+</div>
 
   </div>
 
@@ -228,7 +237,7 @@ th{background:#f2f2f2}
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbzHs4krOC_naCnKUfm_L2deK2e1YoapGo8N_CyeRFC5TQietT84J6oKgT0uPbOUAx1ncA/exec";
+const API = "https://script.google.com/macros/s/AKfycbyDT5us9Ejtgm75w3GACN9MzyhGZAZGa4Oa4gn06vfMjjyOta9oZoFINT_TbKoAoNsaXA/exec";
 
 const popup = document.getElementById("popup");
 
@@ -296,7 +305,7 @@ async function loadReport(m){
   document.getElementById("mesyuarat").innerText = m;
   let tarikh = document.getElementById("tarikh").value;
 
-  let data = await postAPI({
+  let res = await postAPI({
     action:"report",
     tarikh:tarikh,
     mesyuarat:m
@@ -304,22 +313,42 @@ async function loadReport(m){
 
   hideLoading();
 
+  // 🔥 FIX UTAMA
+  let data = Array.isArray(res) ? res : [];
+
+  if(res.status === "error"){
+    alert(res.message || "Ralat data");
+    return;
+  }
+
+  if(!Array.isArray(res)){
+    console.log("API response:", res);
+    alert("Data API tidak sah");
+    return;
+  }
+
   let tbody = document.getElementById("tbody");
   tbody.innerHTML = "";
 
-  data.forEach((r,i)=>{
+  if(res.length === 0){
+    tbody.innerHTML = "<tr><td colspan='7'>Tiada data</td></tr>";
+    return;
+  }
+
+  res.forEach((r,i)=>{
     tbody.innerHTML += `
       <tr>
         <td>${i+1}</td>
-        <td>${r.nama}</td>
-        <td>${r.jawatan}</td>
-        <td>${r.bahagian}</td>
-        <td>${r.tarikh}</td>
-        <td>${r.masa}</td>
-        <td>${r.status}</td>
+        <td>${r.nama || "-"}</td>
+        <td>${r.jawatan || "-"}</td>
+        <td>${r.bahagian || "-"}</td>
+        <td>${r.tarikh || "-"}</td>
+        <td>${r.masa || "-"}</td>
+        <td>${r.status || "-"}</td>
       </tr>
     `;
   });
+
 }
 
 /* PDF GENERATE */
