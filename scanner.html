@@ -138,7 +138,7 @@ button{
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbwKAVL_s6ZeGD1-iKDDqvpvQyB03h5njMnOJSRFTKRDuGYiOoNK3QPilsCy7i0DZce5ow/exec";
+const API = "https://script.google.com/macros/s/AKfycbz9Cndx7FZtswr5EozUGYxArGnAgWQvXL71-Si-LLlFAuuSMN_S-p8VQmervTvRV-bEOg/exec";
 
 let data = JSON.parse(sessionStorage.getItem("mds_data") || "{}");
 
@@ -247,15 +247,14 @@ function startQR(){
       }
 
       fetch(API,{
-        method:"POST",
-        body:new URLSearchParams({
-          action:"scan",
-          nama:text,
-          jawatan:"-",
-          bahagian:"-",
-          tarikh:data.tarikh,
-          mesyuarat:data.mesyuarat
-        })
+  method:"POST",
+  body:new URLSearchParams({
+    action:"scan",
+    id:text,   // 👈 CHANGE HERE
+    tarikh:data.tarikh,
+    mesyuarat:data.mesyuarat
+  })
+})
       })
       .then(r => r.text())
       .then(raw => {
@@ -273,7 +272,7 @@ function startQR(){
           throw new Error(res.message || "Ralat server");
         }
 
-        markScanned(text);
+        markScanned(text.trim().toUpperCase());
 
         pNama.innerText = res.nama || text;
         pJawatan.innerText = res.jawatan || "-";
