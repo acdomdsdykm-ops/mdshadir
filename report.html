@@ -118,6 +118,65 @@ th{background:#f2f2f2}
   100%{transform:rotate(360deg);}
 }
 
+/* ===== PDF CENTER FIX (A4 PERFECT CENTER) ===== */
+#pdfArea{
+  width:210mm;
+  min-height:297mm;
+  background:white;
+  color:black;
+
+  /* CENTER ALL CONTENT */
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+
+  padding:15mm;
+  box-sizing:border-box;
+}
+
+/* WRAPPER SUPAYA CONTENT TAK STRETCH */
+.pdf-wrapper{
+  width:100%;
+  max-width:170mm;
+}
+
+/* HEADER */
+.pdf-header{
+  text-align:center;
+  border-bottom:2px solid #000;
+  padding-bottom:10px;
+  margin-bottom:10px;
+}
+
+/* TABLE CONTROL */
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+}
+
+th,td{
+  border:1px solid #000;
+  padding:6px;
+  text-align:center; /* 🔥 CENTER TEXT DALAM TABLE */
+}
+
+thead{
+  background:#f2f2f2;
+}
+
+/* FOOTER */
+.pdf-footer{
+  margin-top:15px;
+  font-size:11px;
+  text-align:center;
+}
+
+/* PAGE BREAK FIX */
+tr{
+  page-break-inside:avoid;
+}
 </style>
 </head>
 
@@ -155,7 +214,7 @@ th{background:#f2f2f2}
 </table>
 </div>
 
-<!-- POPUP MESYUARAT -->
+<!-- POPUP -->
 <div id="popup" class="popup">
 <h3>Pilih Mesyuarat</h3>
 <div id="list"></div>
@@ -168,68 +227,53 @@ th{background:#f2f2f2}
   <div>Loading...</div>
 </div>
 
-<!-- PDF TEMPLATE -->
-<div id="pdfArea" style="display:none;background:white;color:black;padding:20px;font-family:Arial;">
+<!-- PDF AREA -->
+<div id="pdfArea" style="display:none;">
 
-  <!-- HEADER LETTERHEAD -->
-  <div style="text-align:center;border-bottom:2px solid #000;padding-bottom:10px;margin-bottom:15px;">
+  <div class="pdf-wrapper">
 
-    <img src="mds.png" style="width:80px;margin-bottom:5px;">
+    <!-- HEADER -->
+    <div class="pdf-header">
+      <img src="mds.png" style="width:80px;">
+      <h2 style="margin:5px 0;">MAJLIS DAERAH SIMUNJAN</h2>
+      <p style="margin:0;font-size:12px;">
+        Lot 805, Gunong Ngeli New Service Centre, 94800 Simunjan, Sarawak
+      </p>
+    </div>
 
-    <h2 style="margin:0;font-size:18px;">
-      MAJLIS DAERAH SIMUNJAN
-    </h2>
+    <!-- TITLE -->
+    <h3 style="text-align:center;margin:10px 0;">
+      LAPORAN KEHADIRAN MESYUARAT / PROGRAM
+    </h3>
 
-    <p style="margin:3px 0;font-size:12px;">
-      Lot 805, Gunong Ngeli New Service Centre, 94800 Simunjan, Sarawak
-    </p>
+    <!-- INFO -->
+    <div style="text-align:center;font-size:13px;margin-bottom:10px;line-height:1.6;">
+      <b>Mesyuarat:</b> <span id="pdfMesyuarat"></span><br>
+      <b>Tarikh:</b> <span id="pdfTarikh"></span>
+    </div>
 
-  </div>
+    <!-- TABLE -->
+    <table>
+      <thead>
+        <tr>
+          <th>Bil</th>
+          <th>Nama</th>
+          <th>Jawatan</th>
+          <th>Bahagian</th>
+          <th>Masa</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="pdfTable"></tbody>
+    </table>
 
-  <!-- TITLE REPORT -->
-  <h3 style="text-align:center;margin:10px 0;">
-    LAPORAN KEHADIRAN MESYUARAT / PROGRAM
-  </h3>
-
-  <!-- INFO -->
-  <div style="font-size:13px;margin-bottom:10px;line-height:1.6;">
-    <b>Nama Mesyuarat:</b> <span id="pdfMesyuarat"></span><br>
-    <b>Tarikh:</b> <span id="pdfTarikh"></span>
-  </div>
-
-  <!-- TABLE -->
-  <table style="width:100%;border-collapse:collapse;font-size:12px;">
-    <thead>
-      <tr style="background:#f2f2f2;">
-        <th style="border:1px solid #000;padding:6px;">Bil</th>
-        <th style="border:1px solid #000;padding:6px;">Nama</th>
-        <th style="border:1px solid #000;padding:6px;">Jawatan</th>
-        <th style="border:1px solid #000;padding:6px;">Bahagian</th>
-        <th style="border:1px solid #000;padding:6px;">Masa</th>
-        <th style="border:1px solid #000;padding:6px;">Status</th>
-      </tr>
-    </thead>
-    <tbody id="pdfTable"></tbody>
-  </table>
-
-  <!-- JUMLAH HADIR -->
-  <div style="margin-top:10px;font-size:13px;">
-    <b>Jumlah Kehadiran:</b> <span id="totalHadir"></span> orang
-  </div>
-
-  <br><br>
-
-<div style="text-align:right;font-size:12px;">
-  <p><b>Disediakan oleh:</b> MDS Attendance Digital System</p>
-  <p><b>Dicetak oleh:</b> <span id="printUser">-</span></p>
-  <p><b>Tarikh cetakan:</b> <span id="printTime">-</span></p>
-</div>
-
-<br>
-
-<div style="text-align:center;font-size:11px;margin-top:10px;">
-  Ini adalah cetakan komputer dan tidak memerlukan tandatangan.
-</div>
+    <!-- FOOTER -->
+    <div class="pdf-footer">
+      <p><b>Dicetak dari:</b> MDS Attendance System</p>
+      <p><b>Dicetak oleh:</b> System</p>
+      <p><b>Tarikh cetakan:</b> <span id="printTime"></span></p>
+      <p>Ini adalah cetakan komputer dan tidak memerlukan tandatangan.</p>
+    </div>
 
   </div>
 
@@ -238,8 +282,6 @@ th{background:#f2f2f2}
 <script>
 
 const API = "https://script.google.com/macros/s/AKfycbyDT5us9Ejtgm75w3GACN9MzyhGZAZGa4Oa4gn06vfMjjyOta9oZoFINT_TbKoAoNsaXA/exec";
-
-const popup = document.getElementById("popup");
 
 function showLoading(){
   document.getElementById("loading").style.display="flex";
@@ -276,12 +318,6 @@ async function loadMesyuarat(){
   let list = document.getElementById("list");
   list.innerHTML = "";
 
-  if(!data.length){
-    list.innerHTML = "<p>Tiada mesyuarat</p>";
-    popup.style.display="block";
-    return;
-  }
-
   data.forEach(m=>{
     let b = document.createElement("button");
     b.innerText = m;
@@ -289,20 +325,19 @@ async function loadMesyuarat(){
     list.appendChild(b);
   });
 
-  popup.style.display="block";
+  document.getElementById("popup").style.display="block";
 }
 
 function closePopup(){
-  popup.style.display="none";
+  document.getElementById("popup").style.display="none";
 }
 
 /* REPORT */
 async function loadReport(m){
 
-  popup.style.display="none";
+  closePopup();
   showLoading();
 
-  document.getElementById("mesyuarat").innerText = m;
   let tarikh = document.getElementById("tarikh").value;
 
   let res = await postAPI({
@@ -313,118 +348,80 @@ async function loadReport(m){
 
   hideLoading();
 
-  // 🔥 FIX UTAMA
-  let data = Array.isArray(res) ? res : [];
-
-  if(res.status === "error"){
-    alert(res.message || "Ralat data");
-    return;
-  }
-
-  if(!Array.isArray(res)){
-    console.log("API response:", res);
-    alert("Data API tidak sah");
-    return;
-  }
+  document.getElementById("mesyuarat").innerText = m;
 
   let tbody = document.getElementById("tbody");
   tbody.innerHTML = "";
-
-  if(res.length === 0){
-    tbody.innerHTML = "<tr><td colspan='7'>Tiada data</td></tr>";
-    return;
-  }
 
   res.forEach((r,i)=>{
     tbody.innerHTML += `
       <tr>
         <td>${i+1}</td>
-        <td>${r.nama || "-"}</td>
-        <td>${r.jawatan || "-"}</td>
-        <td>${r.bahagian || "-"}</td>
-        <td>${r.tarikh || "-"}</td>
-        <td>${r.masa || "-"}</td>
-        <td>${r.status || "-"}</td>
+        <td>${r.nama}</td>
+        <td>${r.jawatan}</td>
+        <td>${r.bahagian}</td>
+        <td>${r.tarikh}</td>
+        <td>${r.masa}</td>
+        <td>${r.status}</td>
       </tr>
     `;
   });
 
 }
 
-/* PDF GENERATE */
+/* PDF */
 async function downloadPDF(){
 
   let tarikh = document.getElementById("tarikh").value;
   let mesyuarat = document.getElementById("mesyuarat").innerText;
 
-  if(!tarikh || mesyuarat === "-"){
-    alert("Pilih data");
-    return;
-  }
-
   showLoading();
 
-  try{
+  let data = await postAPI({
+    action:"report",
+    tarikh:tarikh,
+    mesyuarat:mesyuarat
+  });
 
-    let data = await postAPI({
-      action:"report",
-      tarikh:tarikh,
-      mesyuarat:mesyuarat
-    });
+  document.getElementById("pdfMesyuarat").innerText = mesyuarat;
+  document.getElementById("pdfTarikh").innerText = tarikh;
 
-    // ❗ tunggu render dulu (INI PENTING)
-    await new Promise(r => setTimeout(r, 300));
+  document.getElementById("printTime").innerText =
+    new Date().toLocaleString("ms-MY");
 
-    document.getElementById("pdfMesyuarat").innerText = mesyuarat;
-    document.getElementById("pdfTarikh").innerText = tarikh;
+  let html = "";
+  data.forEach((r,i)=>{
+    html += `
+      <tr>
+        <td>${i+1}</td>
+        <td>${r.nama}</td>
+        <td>${r.jawatan}</td>
+        <td>${r.bahagian}</td>
+        <td>${r.masa}</td>
+        <td>${r.status}</td>
+      </tr>
+    `;
+  });
 
-    let html = "";
-    let count = 0;
+  document.getElementById("pdfTable").innerHTML = html;
 
-    data.forEach((r,i)=>{
-      count++;
+  const pdfArea = document.getElementById("pdfArea");
+  pdfArea.style.display = "block";
 
-      html += `
-        <tr>
-          <td style="border:1px solid #000;padding:6px;">${i+1}</td>
-          <td style="border:1px solid #000;padding:6px;">${r.nama || "-"}</td>
-          <td style="border:1px solid #000;padding:6px;">${r.jawatan || "-"}</td>
-          <td style="border:1px solid #000;padding:6px;">${r.bahagian || "-"}</td>
-          <td style="border:1px solid #000;padding:6px;">${r.masa || "-"}</td>
-          <td style="border:1px solid #000;padding:6px;">${r.status || "-"}</td>
-        </tr>
-      `;
-    });
+  await html2pdf()
+    .set({
+      margin:10,
+      filename:"Laporan_MDS.pdf",
+      html2canvas:{scale:2,useCORS:true},
+      jsPDF:{format:"a4",orientation:"portrait"},
+      pagebreak:{mode:["css","legacy"],avoid:["tr"]}
+    })
+    .from(pdfArea)
+    .save();
 
-    document.getElementById("pdfTable").innerHTML = html;
-    document.getElementById("totalHadir").innerText = count;
+  pdfArea.style.display = "none";
 
-    // 🔥 PENTING: paksa visible sebelum export
-    const pdfArea = document.getElementById("pdfArea");
-    pdfArea.style.display = "block";
-
-    await new Promise(r => setTimeout(r, 500));
-
-    await html2pdf()
-      .set({
-        margin:10,
-        filename:"Laporan_MDS.pdf",
-        image:{type:"jpeg",quality:0.98},
-        html2canvas:{scale:2,useCORS:true},
-        jsPDF:{format:"a4",orientation:"portrait"}
-      })
-      .from(pdfArea)
-      .outputPdf("dataurlnewwindow");
-
-    // optional hide balik
-    pdfArea.style.display = "none";
-
-  }catch(err){
-    console.log(err);
-    alert("Gagal generate PDF");
-  }finally{
-    hideLoading();
-  }
+  hideLoading();
 }
 
 </script>
