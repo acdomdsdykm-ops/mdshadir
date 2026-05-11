@@ -8,9 +8,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <style>
-
 body{
-  font-family:Arial;
+  font-family:Arial,sans-serif;
   margin:0;
   padding:20px;
   background:linear-gradient(135deg,#064e3b,#022c22);
@@ -18,24 +17,21 @@ body{
   text-align:center;
 }
 
-/* BOX */
-.box{
+.box,.info{
   background:white;
   color:black;
   padding:15px;
   margin:10px auto;
   border-radius:12px;
-  max-width:900px;
+  max-width:950px;
 }
 
-/* INPUT */
 input{
   padding:10px;
   border-radius:8px;
   border:1px solid #ccc;
 }
 
-/* BUTTON */
 button{
   padding:10px 15px;
   border:none;
@@ -48,35 +44,27 @@ button{
 
 button:hover{opacity:0.85}
 
-/* INFO */
-.info{
-  background:white;
-  color:black;
-  padding:10px;
-  border-radius:10px;
-  margin:10px auto;
-  font-weight:bold;
-  max-width:900px;
+.table-wrap{
+  overflow-x:auto;
 }
 
-/* TABLE */
 table{
   width:100%;
   border-collapse:collapse;
-  margin-top:10px;
   background:white;
   color:black;
 }
 
 th,td{
   border:1px solid #000;
-  padding:8px;
-  text-align:left;
+  padding:7px;
+  font-size:13px;
 }
 
-th{background:#f2f2f2}
+th{
+  background:#f2f2f2;
+}
 
-/* POPUP */
 .popup{
   position:fixed;
   top:50%;
@@ -85,16 +73,18 @@ th{background:#f2f2f2}
   background:white;
   color:black;
   padding:20px;
-  width:320px;
+  width:350px;
   border-radius:10px;
   display:none;
   z-index:2000;
+  max-height:70vh;
+  overflow:auto;
 }
 
-/* LOADING */
 #loading{
   position:fixed;
-  top:0;left:0;
+  top:0;
+  left:0;
   width:100%;
   height:100%;
   background:rgba(0,0,0,0.85);
@@ -115,71 +105,60 @@ th{background:#f2f2f2}
 }
 
 @keyframes spin{
-  100%{transform:rotate(360deg);}
+  100%{transform:rotate(360deg)}
 }
 
-/* ===== PDF CENTER FIX (A4 PERFECT CENTER) ===== */
 #pdfArea{
   width:210mm;
   min-height:297mm;
   background:white;
   color:black;
-
-  /* CENTER ALL CONTENT */
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  flex-direction:column;
-
-  padding:15mm;
+  padding:12mm;
   box-sizing:border-box;
 }
 
-/* WRAPPER SUPAYA CONTENT TAK STRETCH */
-.pdf-wrapper{
-  width:100%;
-  max-width:170mm;
-}
-
-/* HEADER */
 .pdf-header{
   text-align:center;
   border-bottom:2px solid #000;
-  padding-bottom:10px;
+  padding-bottom:8px;
   margin-bottom:10px;
 }
 
-/* TABLE CONTROL */
-table{
+.pdf-title{
+  text-align:center;
+  margin:8px 0;
+}
+
+.pdf-info{
+  text-align:center;
+  font-size:12px;
+  margin-bottom:8px;
+  line-height:1.5;
+}
+
+.pdf-table{
   width:100%;
   border-collapse:collapse;
-  font-size:12px;
-}
-
-th,td{
-  border:1px solid #000;
-  padding:6px;
-  text-align:center; /* 🔥 CENTER TEXT DALAM TABLE */
-}
-
-thead{
-  background:#f2f2f2;
-}
-
-/* FOOTER */
-.pdf-footer{
-  margin-top:15px;
   font-size:11px;
+}
+
+.pdf-table th,.pdf-table td{
+  border:1px solid #000;
+  padding:5px;
   text-align:center;
 }
 
-/* PAGE BREAK FIX */
+.pdf-footer{
+  margin-top:12px;
+  font-size:10px;
+  text-align:center;
+}
+
 tr{
   page-break-inside:avoid;
 }
 </style>
 </head>
-
 <body>
 
 <h2>📄 MDS Report System</h2>
@@ -187,112 +166,91 @@ tr{
 <div class="box">
   <label>Tarikh:</label><br>
   <input type="date" id="tarikh"><br><br>
-
   <button onclick="loadMesyuarat()">🔍 Cari Report</button>
   <button onclick="downloadPDF()">📄 Generate PDF</button>
 </div>
 
 <div class="info">
-📌 Mesyuarat: <span id="mesyuarat">-</span><br>
-📅 Tarikh: <span id="tarikhInfo">-</span>
+  📌 Mesyuarat: <span id="mesyuarat">-</span><br>
+  📅 Tarikh: <span id="tarikhInfo">-</span>
 </div>
 
-<div class="box">
-<table>
-<thead>
-<tr>
-<th>Bil</th>
-<th>Nama</th>
-<th>Jawatan</th>
-<th>Bahagian</th>
-<th>Tarikh</th>
-<th>Masa</th>
-<th>Status</th>
-</tr>
-</thead>
-<tbody id="tbody"></tbody>
-</table>
+<div class="box table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Bil</th>
+        <th>Nama</th>
+        <th>Jawatan</th>
+        <th>Bahagian</th>
+        <th>Tarikh</th>
+        <th>Masa</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
 </div>
 
-<!-- POPUP -->
 <div id="popup" class="popup">
-<h3>Pilih Mesyuarat</h3>
-<div id="list"></div>
-<button onclick="closePopup()">Tutup</button>
+  <h3>Pilih Mesyuarat</h3>
+  <div id="list"></div>
+  <button onclick="closePopup()">Tutup</button>
 </div>
 
-<!-- LOADING -->
 <div id="loading">
   <div class="spinner"></div>
-  <div>Loading...</div>
+  <div style="margin-top:10px">Loading...</div>
 </div>
 
-<!-- PDF AREA -->
 <div id="pdfArea" style="display:none;">
-
-  <div class="pdf-wrapper">
-
-    <!-- HEADER -->
-    <div class="pdf-header">
-      <img src="mds.png" style="width:80px;">
-      <h2 style="margin:5px 0;">MAJLIS DAERAH SIMUNJAN</h2>
-      <p style="margin:0;font-size:12px;">
-        Lot 805, Gunong Ngeli New Service Centre, 94800 Simunjan, Sarawak
-      </p>
-    </div>
-
-    <!-- TITLE -->
-    <h3 style="text-align:center;margin:10px 0;">
-      LAPORAN KEHADIRAN MESYUARAT / PROGRAM
-    </h3>
-
-    <!-- INFO -->
-    <div style="text-align:center;font-size:13px;margin-bottom:10px;line-height:1.6;">
-      <b>Mesyuarat:</b> <span id="pdfMesyuarat"></span><br>
-      <b>Tarikh:</b> <span id="pdfTarikh"></span>
-    </div>
-
-    <!-- TABLE -->
-    <table>
-      <thead>
-        <tr>
-          <th>Bil</th>
-          <th>Nama</th>
-          <th>Jawatan</th>
-          <th>Bahagian</th>
-          <th>Masa</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="pdfTable"></tbody>
-    </table>
-
-    <!-- FOOTER -->
-    <div class="pdf-footer">
-      <p><b>Dicetak dari:</b> MDS Attendance System</p>
-      <p><b>Dicetak oleh:</b> System</p>
-      <p><b>Tarikh cetakan:</b> <span id="printTime"></span></p>
-      <p>Ini adalah cetakan komputer dan tidak memerlukan tandatangan.</p>
-    </div>
-
+  <div class="pdf-header">
+    <img src="mds.png" style="width:70px;">
+    <h2 style="margin:5px 0;">MAJLIS DAERAH SIMUNJAN</h2>
+    <div style="font-size:11px;">Lot 805, Gunong Ngeli New Service Centre, 94800 Simunjan, Sarawak</div>
   </div>
 
+  <h3 class="pdf-title">LAPORAN KEHADIRAN MESYUARAT / PROGRAM</h3>
+
+  <div class="pdf-info">
+    <b>Mesyuarat:</b> <span id="pdfMesyuarat"></span><br>
+    <b>Tarikh:</b> <span id="pdfTarikh"></span>
+  </div>
+
+  <table class="pdf-table">
+    <thead>
+      <tr>
+        <th>Bil</th>
+        <th>Nama</th>
+        <th>Jawatan</th>
+        <th>Bahagian</th>
+        <th>Masa</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="pdfTable"></tbody>
+  </table>
+
+  <div class="pdf-footer">
+    <div><b>Dicetak dari:</b> MDS Attendance System</div>
+    <div><b>Tarikh cetakan:</b> <span id="printTime"></span></div>
+    <div>Ini adalah cetakan komputer dan tidak memerlukan tandatangan.</div>
+  </div>
 </div>
 
 <script>
-
-const API = "https://script.google.com/macros/s/AKfycbyDT5us9Ejtgm75w3GACN9MzyhGZAZGa4Oa4gn06vfMjjyOta9oZoFINT_TbKoAoNsaXA/exec";
+const API = "https://script.google.com/macros/s/AKfycbwRt6r8wkEnhzd5lFwx8ZBZ_6OSlA8eisJ8pFIBqPJkCaXbQYCuoiMmUjwTdSwsn37R8w/exec";
 
 function showLoading(){
-  document.getElementById("loading").style.display="flex";
+  document.getElementById("loading").style.display = "flex";
 }
 
 function hideLoading(){
-  document.getElementById("loading").style.display="none";
+  document.getElementById("loading").style.display = "none";
 }
 
 async function postAPI(payload){
-  let res = await fetch(API,{
+  const res = await fetch(API,{
     method:"POST",
     headers:{"Content-Type":"application/x-www-form-urlencoded"},
     body:new URLSearchParams(payload)
@@ -300,47 +258,46 @@ async function postAPI(payload){
   return await res.json();
 }
 
-/* LOAD MESYUARAT */
 async function loadMesyuarat(){
-
-  let tarikh = document.getElementById("tarikh").value;
-  if(!tarikh){ alert("Pilih tarikh"); return; }
+  const tarikh = document.getElementById("tarikh").value;
+  if(!tarikh){
+    alert("Pilih tarikh");
+    return;
+  }
 
   showLoading();
 
-  let data = await postAPI({
+  const data = await postAPI({
     action:"listMesyuarat",
     tarikh:tarikh
   });
 
   hideLoading();
 
-  let list = document.getElementById("list");
+  const list = document.getElementById("list");
   list.innerHTML = "";
 
   data.forEach(m=>{
-    let b = document.createElement("button");
-    b.innerText = m;
+    const b = document.createElement("button");
+    b.textContent = m;
     b.onclick = ()=>loadReport(m);
     list.appendChild(b);
   });
 
-  document.getElementById("popup").style.display="block";
+  document.getElementById("popup").style.display = "block";
 }
 
 function closePopup(){
-  document.getElementById("popup").style.display="none";
+  document.getElementById("popup").style.display = "none";
 }
 
-/* REPORT */
 async function loadReport(m){
-
   closePopup();
   showLoading();
 
-  let tarikh = document.getElementById("tarikh").value;
+  const tarikh = document.getElementById("tarikh").value;
 
-  let res = await postAPI({
+  const res = await postAPI({
     action:"report",
     tarikh:tarikh,
     mesyuarat:m
@@ -348,9 +305,10 @@ async function loadReport(m){
 
   hideLoading();
 
-  document.getElementById("mesyuarat").innerText = m;
+  document.getElementById("mesyuarat").textContent = m;
+  document.getElementById("tarikhInfo").textContent = tarikh;
 
-  let tbody = document.getElementById("tbody");
+  const tbody = document.getElementById("tbody");
   tbody.innerHTML = "";
 
   res.forEach((r,i)=>{
@@ -361,44 +319,42 @@ async function loadReport(m){
         <td>${r.jawatan}</td>
         <td>${r.bahagian}</td>
         <td>${r.tarikh}</td>
-        <td>${r.masa}</td>
+        <td>${String(r.masa).trim()}</td>
         <td>${r.status}</td>
       </tr>
     `;
   });
-
 }
 
-/* PDF */
 async function downloadPDF(){
+  const tarikh = document.getElementById("tarikh").value;
+  const mesyuarat = document.getElementById("mesyuarat").textContent;
 
-  let tarikh = document.getElementById("tarikh").value;
-  let mesyuarat = document.getElementById("mesyuarat").innerText;
+  if(mesyuarat === "-" || !tarikh){
+    alert("Sila load report dahulu");
+    return;
+  }
 
   showLoading();
 
-  let data = await postAPI({
-    action:"report",
-    tarikh:tarikh,
-    mesyuarat:mesyuarat
-  });
+  document.getElementById("pdfMesyuarat").textContent = mesyuarat;
+  document.getElementById("pdfTarikh").textContent = tarikh;
+  document.getElementById("printTime").textContent = new Date().toLocaleString("ms-MY");
 
-  document.getElementById("pdfMesyuarat").innerText = mesyuarat;
-  document.getElementById("pdfTarikh").innerText = tarikh;
-
-  document.getElementById("printTime").innerText =
-    new Date().toLocaleString("ms-MY");
-
+  const rows = document.querySelectorAll("#tbody tr");
   let html = "";
-  data.forEach((r,i)=>{
+
+  rows.forEach((row,i)=>{
+    const td = row.querySelectorAll("td");
+
     html += `
       <tr>
         <td>${i+1}</td>
-        <td>${r.nama}</td>
-        <td>${r.jawatan}</td>
-        <td>${r.bahagian}</td>
-        <td>${r.masa}</td>
-        <td>${r.status}</td>
+        <td>${td[1].textContent.trim()}</td>
+        <td>${td[2].textContent.trim()}</td>
+        <td>${td[3].textContent.trim()}</td>
+        <td>${td[5].textContent.trim()}</td>
+        <td>${td[6].textContent.trim()}</td>
       </tr>
     `;
   });
@@ -410,7 +366,7 @@ async function downloadPDF(){
 
   await html2pdf()
     .set({
-      margin:10,
+      margin:5,
       filename:"Laporan_MDS.pdf",
       html2canvas:{scale:2,useCORS:true},
       jsPDF:{format:"a4",orientation:"portrait"},
@@ -420,10 +376,8 @@ async function downloadPDF(){
     .save();
 
   pdfArea.style.display = "none";
-
   hideLoading();
 }
-
 </script>
 
 </body>
