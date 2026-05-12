@@ -16,11 +16,14 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
+  padding:20px;
+  box-sizing:border-box;
 }
 
 /* WRAPPER */
 .card{
   width:370px;
+  max-width:100%;
 }
 
 /* HEADER */
@@ -73,18 +76,14 @@ body{
 
 /* ================= ID CARD ================= */
 .id-card{
+  display:none;
   margin-top:18px;
   padding:22px;
   border-radius:22px;
   background:linear-gradient(135deg,#0ea5a4,#22c55e);
   position:relative;
   overflow:hidden;
-
-  /* EMBOSS FRAME */
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,0.35),
-    inset 0 0 20px rgba(0,0,0,0.25),
-    0 25px 60px rgba(0,0,0,0.5);
+  box-shadow:0 25px 60px rgba(0,0,0,0.5);
 }
 
 /* WATERMARK */
@@ -102,17 +101,22 @@ body{
   pointer-events:none;
 }
 
-/* 🔥 CLEAN LOGO (FIXED) */
+/* LOGO ID CARD */
 .id-card-logo{
   width:65px;
   display:block;
-  margin:0 auto 10px auto;
+  margin:0 auto 5px auto;
+}
 
-  filter:none; /* IMPORTANT: no dark effect */
-
-  image-rendering: -webkit-optimize-contrast;
-
-  box-shadow:0 4px 10px rgba(0,0,0,0);
+/* 🔥 TAMBAHAN: NAMA MAJLIS DALAM ID CARD */
+.id-card-agency{
+  text-align:center;
+  font-size:11px;
+  font-weight:800;
+  color:#ffffff;
+  letter-spacing:1px;
+  margin-bottom:2px;
+  text-shadow:0 2px 5px rgba(0,0,0,0.5);
 }
 
 /* TITLE */
@@ -121,26 +125,19 @@ body{
   margin-bottom:12px;
 }
 
-/* MAJLIS NAME (WHITE) */
 .org-name{
   font-size:12px;
   font-weight:700;
   color:#fff;
-  text-shadow:0 2px 5px rgba(0,0,0,0.5);
 }
 
-/* BLUE LABEL */
 .section-title{
   font-size:14px;
   font-weight:900;
   color:#0b2a4a;
-  letter-spacing:1.5px;
-  text-shadow:
-    0 1px 0 rgba(255,255,255,0.6),
-    0 -1px 0 rgba(0,0,0,0.3);
 }
 
-/* PROFILE CENTER */
+/* PROFILE */
 .profile-center{
   display:flex;
   flex-direction:column;
@@ -157,75 +154,41 @@ body{
   border:2px solid rgba(255,255,255,0.4);
 }
 
-/* NAME */
 .name-box{
   margin-top:10px;
   font-size:20px;
   font-weight:900;
-  padding:10px 12px;
+  padding:10px;
   border-radius:12px;
   background:rgba(255,255,255,0.25);
-  color:#000;
 }
 
-/* BOTTOM SECTION */
+/* BOTTOM */
 .bottom-row{
   display:flex;
   gap:12px;
-  align-items:flex-start;
 }
 
-/* QR LEFT */
 .qr-box{
   background:white;
   padding:8px;
   border-radius:12px;
   flex:0 0 110px;
-  display:flex;
-  justify-content:center;
 }
 
-.qr-box img{
-  width:100px;
-  height:100px;
-}
+.qr-box img{width:100px;}
 
-/* INFO RIGHT */
-.info{
-  flex:1;
-}
+.info{flex:1;}
 
 .row{
   display:flex;
   justify-content:space-between;
-  align-items:center;
   padding:6px 0;
   border-bottom:1px solid rgba(255,255,255,0.2);
-  color:#e5e7eb;
 }
 
-.row:last-child{
-  border-bottom:none;
-}
-
-.label{
-  font-size:10px;
-  text-transform:uppercase;
-}
-
-.value{
-  font-size:12px;
-  font-weight:800;
-  text-align:right;
-}
-
-/* NOTE */
-.note{
-  margin-top:12px;
-  font-size:11px;
-  text-align:center;
-  color:#e5e7eb;
-}
+.label{font-size:10px;color:#e5e7eb;}
+.value{font-size:12px;font-weight:800;color:white;}
 
 /* RESET */
 .reset-btn{
@@ -237,8 +200,45 @@ body{
   background:#3b82f6;
   color:white;
   font-weight:700;
+}
+
+/* POPUP */
+.popup{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.65);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:9999;
+}
+
+.popup-box{
+  width:90%;
+  max-width:420px;
+  background:white;
+  border-radius:20px;
+  padding:20px;
+}
+
+.popup-title{
+  text-align:center;
+  font-weight:900;
+  margin-bottom:10px;
+}
+
+.popup-btn{
+  width:100%;
+  margin-top:10px;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:#f3f4f6;
+  text-align:left;
   cursor:pointer;
 }
+
+.popup-btn:hover{background:#d1fae5;}
 
 /* LOADING */
 .loading{
@@ -248,14 +248,13 @@ body{
   display:none;
   align-items:center;
   justify-content:center;
-  flex-direction:column;
   z-index:999;
 }
 
 .spinner{
   width:50px;
   height:50px;
-  border:4px solid rgba(255,255,255,0.3);
+  border:4px solid #ccc;
   border-top:4px solid #10b981;
   border-radius:50%;
   animation:spin 1s linear infinite;
@@ -272,12 +271,17 @@ body{
 
 <div id="loading" class="loading">
   <div class="spinner"></div>
-  <p style="color:white;">Sedang mencari data...</p>
+</div>
+
+<div class="popup" id="popup">
+  <div class="popup-box">
+    <div class="popup-title">Pilih Nama Staf</div>
+    <div id="popupList"></div>
+  </div>
 </div>
 
 <div class="card">
 
-  <!-- HEADER -->
   <div class="card-header">
 
     <img src="mds.png" class="logo">
@@ -289,24 +293,34 @@ body{
       94800 Simunjan, Sarawak.
     </div>
 
-    <button class="main-btn" onclick="searchIC()">🔍 Semakan ID Staf</button>
+    <button class="main-btn" onclick="searchIC()">
+      🔍 Semakan ID Staf
+    </button>
 
   </div>
 
   <!-- ID CARD -->
   <div class="id-card" id="idCard">
 
-    <!-- CLEAN LOGO -->
     <img src="mds.png" class="id-card-logo">
 
+    <!-- 🔥 TAMBAHAN NAMA MAJLIS DALAM ID CARD -->
+    <div class="id-card-agency">
+      MAJLIS DAERAH SIMUNJAN
+    </div>
+
     <div class="title-wrap">
-      <div class="org-name">MAJLIS DAERAH SIMUNJAN</div>
+
       <div class="section-title">KAD DIGITAL STAF</div>
+
     </div>
 
     <div class="profile-center">
+
       <img id="staffPhoto" class="staff-photo">
+
       <div class="name-box" id="nama"></div>
+
     </div>
 
     <div class="bottom-row">
@@ -321,10 +335,6 @@ body{
 
     </div>
 
-    <div class="note">
-      Sila imbas QR untuk rekod kehadiran rasmi.
-    </div>
-
     <button class="reset-btn" onclick="location.reload()">🔄 Semakan Semula</button>
 
   </div>
@@ -333,17 +343,15 @@ body{
 
 <script>
 
-const API="https://script.google.com/macros/s/AKfycbxwwGQEH_bQY9fbkVIASu_WxGtyXrzrVqAQ77xHXm3iJpn_v8xHStHL_nRgSZXilQuPLQ/exec";
+const API = "https://script.google.com/macros/s/AKfycbzjl73uU9lHmVDb03jJT4tFMFSCvIkxSkfbFJpPl_DiTjdpahexTT9ITwHBpNBYBAejqQ/exec";
 
+let staffList = [];
+
+/* SEARCH */
 async function searchIC(){
 
   let ic = prompt("Masukkan 4 digit terakhir IC:");
   if(!ic) return;
-
-  if(!/^\d{4}$/.test(ic)){
-    alert("Sila masukkan 4 digit sahaja");
-    return;
-  }
 
   document.getElementById("loading").style.display="flex";
 
@@ -357,30 +365,66 @@ async function searchIC(){
 
     let data = await res.json();
 
-    if(!data.success){
+    if(!data || (data.success === false && !Array.isArray(data))){
       alert("Data tidak dijumpai");
-      location.reload();
       return;
     }
 
-    document.getElementById("idCard").style.display="block";
+    if(Array.isArray(data)){
+      staffList = data;
+      showPopup(data);
+      return;
+    }
 
-    document.getElementById("nama").innerText=data.nama;
-    document.getElementById("jawatan").innerText=data.jawatan;
-    document.getElementById("bahagian").innerText=data.bahagian;
-    document.getElementById("idstaf").innerText=data.id;
+    showCard(data);
 
-    document.getElementById("staffPhoto").src =
-      data.gambar || "https://via.placeholder.com/100x120";
-
-    let qr=`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(data.id)}&t=${Date.now()}`;
-    document.getElementById("qrcode").innerHTML=`<img src="${qr}">`;
-
-  }catch(e){
-    alert("Ralat server / API tidak aktif");
   }finally{
     document.getElementById("loading").style.display="none";
   }
+
+}
+
+/* POPUP */
+function showPopup(list){
+
+  let box = document.getElementById("popupList");
+  box.innerHTML = "";
+
+  list.forEach((item,index)=>{
+
+    box.innerHTML += `
+      <button class="popup-btn" onclick="selectStaff(${index})">
+        <b>${item.nama}</b><br>
+        <small>${item.jawatan}</small>
+      </button>
+    `;
+
+  });
+
+  document.getElementById("popup").style.display="flex";
+
+}
+
+function selectStaff(i){
+  document.getElementById("popup").style.display="none";
+  showCard(staffList[i]);
+}
+
+/* CARD */
+function showCard(data){
+
+  document.getElementById("idCard").style.display="block";
+
+  document.getElementById("nama").innerText=data.nama;
+  document.getElementById("jawatan").innerText=data.jawatan;
+  document.getElementById("bahagian").innerText=data.bahagian;
+  document.getElementById("idstaf").innerText=data.id;
+
+  document.getElementById("staffPhoto").src=data.gambar;
+
+  document.getElementById("qrcode").innerHTML=
+    `<img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${data.id}">`;
+
 }
 
 </script>
